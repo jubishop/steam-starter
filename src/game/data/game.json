@@ -1,0 +1,46 @@
+{
+  "arena": {
+    "width": 40,
+    "height": 22.5
+  },
+  "player": {
+    "radius": 0.62,
+    "speed": 8.2,
+    "maxHealth": 100,
+    "invulnerabilitySeconds": 0.45
+  },
+  "weapon": {
+    "bulletSpeed": 23,
+    "bulletRadius": 0.16,
+    "fireInterval": 0.115,
+    "damage": 1,
+    "lifetime": 1.4,
+    "maxBullets": 320
+  },
+  "enemy": {
+    "radius": 0.55,
+    "contactDamage": 12,
+    "score": 100,
+    "maxEnemies": 180
+  },
+  "waves": [
+    {
+      "duration": 25,
+      "spawnInterval": 0.7,
+      "speed": 2.1,
+      "health": 1
+    },
+    {
+      "duration": 30,
+      "spawnInterval": 0.48,
+      "speed": 2.5,
+      "health": 1
+    },
+    {
+      "duration": 35,
+      "spawnInterval": 0.34,
+      "speed": 2.85,
+      "health": 2
+    }
+  ]
+}

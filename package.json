@@ -1,0 +1,41 @@
+{
+  "name": "steam-game-starter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A controller-first Three.js game starter for Steam Machine.",
+  "author": "Jubishop",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "concurrently -k -n web,electron -c cyan,magenta \"npm:dev:web\" \"npm:dev:electron\"",
+    "dev:web": "vite --host 127.0.0.1",
+    "dev:electron": "wait-on http://127.0.0.1:5173 && electron . --dev",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "config:check": "node scripts/validate-config.mjs",
+    "art:build": "node scripts/build-artwork.mjs",
+    "art:check": "node scripts/validate-artwork.mjs",
+    "build": "npm run typecheck && vite build",
+    "check": "npm run test && npm run config:check && npm run art:check && npm run build",
+    "package:linux": "npm run build && electron-builder --config electron-builder.config.cjs --linux dir --x64",
+    "dist:linux": "npm run build && electron-builder --config electron-builder.config.cjs --linux AppImage --x64 --publish never",
+    "deploy:steam": "node scripts/deploy-steam-machine.mjs",
+    "setup:steam": "node scripts/setup-steam-ssh.mjs",
+    "shipit": "npm run check && npm run deploy:steam"
+  },
+  "dependencies": {
+    "three": "0.185.1"
+  },
+  "devDependencies": {
+    "@types/node": "26.2.0",
+    "@types/three": "^0.185.4",
+    "concurrently": "10.0.4",
+    "electron": "43.4.0",
+    "electron-builder": "26.15.3",
+    "sharp": "0.35.3",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vitest": "4.1.10",
+    "wait-on": "9.1.0"
+  }
+}

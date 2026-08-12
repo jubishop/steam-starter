@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+game_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+# Steam's overlay preload crashes Electron's Chromium zygote on SteamOS.
+# Keep Electron's sandbox enabled and launch only the game without the preload.
+unset LD_PRELOAD
+
+exec "$game_dir/$(basename "$0")-bin" "$@"
