@@ -9,11 +9,11 @@ Guide the creator with short, plain explanations. Make routine technical decisio
 
 ## Start a game safely
 
-1. Check the current folder, Git remote, `game.config.json`, and `.starter-template`.
+1. Check the current folder, `game.config.json`, and `.starter-template`. Inspect Git only if it is available; it is optional.
 2. Check the creator-computer tools in `references/setup.md`. Handle missing tools with a short explanation and parent approval before installing software.
-3. If this is the source `jubishop/steam-starter` repository, do not turn it into the creator's game. Ask where to create a new folder, defaulting to `~/projects/<game-slug>`. Require a new or empty folder, then create the game from the GitHub template.
-4. If this is already a repository created from the template, personalize it in place.
-5. Ask for the game title and a one-sentence idea first. Derive a lowercase hyphenated slug. Ask whether its GitHub repository should be private or public only when creating one; recommend private for a child's game.
+3. If this is the source `jubishop/steam-starter` repository, do not turn it into the creator's game. Ask where to create a new folder, require a new or empty destination, and copy the starter contents there without its `.git` directory.
+4. If this is a downloaded starter in the creator's chosen game folder, personalize it in place.
+5. Ask for the game title and a one-sentence idea first. Derive a lowercase hyphenated slug. Do not ask about GitHub. Local-only is the default; a parent can request optional version control or online backup later.
 6. Update `game.config.json`. Keep `appId` stable after the game has been added to Steam. Remove `.starter-template` only after the project is personalized.
 7. Do not ask which framework to use. Three.js, TypeScript, Electron, Vite, Vitest, and npm are the fixed foundation.
 
@@ -48,6 +48,6 @@ Treat requests such as “deploy,” “update my game,” “ship it,” “put
 5. Verify the remote launcher and `app.asar` match the local package. When the shortcut exists, also verify the compact artwork and any required Steam restart.
 6. Tell the creator the game is ready and what to select in Gaming Mode.
 
-Deployment does not by itself authorize publishing source code or changing repository visibility. Commit and push when the user asks to save, publish, commit, push, or ship the repository, or when their established repository instructions make that part of the requested workflow.
+Deployment does not by itself authorize publishing source code. Use Git only when it is already configured or a parent asks for version control or online backup. Never make a child's game public by default.
 
 Read [references/deployment.md](references/deployment.md) when changing deployment scripts, diagnosing Steam launch behavior, or adding another Steam Machine.

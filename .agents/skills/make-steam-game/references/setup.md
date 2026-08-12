@@ -4,9 +4,9 @@ There are four separate one-time checks or steps. Explain which one is needed so
 
 ## 0. Check the creator computer
 
-Codex checks `node`, `npm`, `git`, `ssh`, `scp`, and `tar` before starting. Use Node.js 24 or newer. macOS and current Windows versions include the SSH and archive tools; Git or Node.js might still need installation.
+Codex checks `node`, `npm`, `ssh`, `scp`, and `tar` before starting. Use Node.js 24 or newer. macOS and current Windows versions include the SSH and archive tools; Node.js might still need installation. Git is optional and must not block game creation or deployment.
 
-If a tool is missing, explain its purpose in one sentence. Ask a parent before installing system software. On Windows, prefer `winget`; on macOS, use the creator's existing package manager or the official installer. Verify each installed command before continuing. GitHub CLI (`gh`) is optional when Codex can create the repository through its GitHub connection.
+If a required tool is missing, explain its purpose in one sentence. Ask a parent before installing system software. On Windows, prefer `winget`; on macOS, use the creator's existing package manager or the official installer. Verify each installed command before continuing. Do not install Git or GitHub CLI unless a parent asks for version control or online backup.
 
 ## 1. Enable SSH on the Steam Machine
 

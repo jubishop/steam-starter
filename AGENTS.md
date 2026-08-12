@@ -21,3 +21,4 @@ When the user asks to deploy, update the Steam Machine, ship the game, run `ship
 - Never reuse a nonempty local folder for a new game. Deploy only to the remote directory derived from the current game's validated slug.
 - Keep saves outside the deployed game directory so a clean deployment cannot remove progress.
 - Keep creator-side scripts portable across macOS and Windows. Use Node and standard OpenSSH tools; do not require Fish or `rsync`.
+- Treat Git and GitHub as optional backup tools. They must not block creating, changing, or deploying a game.
