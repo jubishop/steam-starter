@@ -4,6 +4,20 @@ import { chmod, copyFile, mkdir, readFile, rename, rm, writeFile } from "node:fs
 import { dirname, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+process.on("uncaughtException", reportFailure);
+process.on("unhandledRejection", reportFailure);
+
+let failureReported = false;
+function reportFailure(error) {
+  if (failureReported) {
+    return;
+  }
+  failureReported = true;
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`\nDeployment failed: ${message}`);
+  process.exitCode = 1;
+}
+
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const releaseDirectory = resolve(projectRoot, "release");
 const buildDirectory = resolve(releaseDirectory, "linux-unpacked");

@@ -1,13 +1,36 @@
 import { spawn } from "node:child_process";
+import { lookup } from "node:dns/promises";
 import { access, mkdir, readFile } from "node:fs/promises";
+import { createConnection } from "node:net";
 import { homedir } from "node:os";
 import { resolve } from "node:path";
+
+process.on("uncaughtException", reportFailure);
+process.on("unhandledRejection", reportFailure);
+
+let failureReported = false;
+function reportFailure(error) {
+  if (failureReported) {
+    return;
+  }
+  failureReported = true;
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`\nSSH setup failed: ${message}`);
+  process.exitCode = 1;
+}
 
 const steamHost = process.env.STEAM_MACHINE_HOST || "steamdeck.local";
 const steamUser = process.env.STEAM_MACHINE_USER || "deck";
 const remote = `${steamUser}@${steamHost}`;
 const sshDirectory = resolve(homedir(), ".ssh");
 const keyPath = resolve(sshDirectory, "id_ed25519");
+
+if (!/^[A-Za-z0-9._-]+$/u.test(steamHost)) {
+  throw new Error("STEAM_MACHINE_HOST contains unsupported characters.");
+}
+if (!/^[A-Za-z0-9._-]+$/u.test(steamUser)) {
+  throw new Error("STEAM_MACHINE_USER contains unsupported characters.");
+}
 
 function run(command, args, { input, quiet = false } = {}) {
   return new Promise((resolveRun, reject) => {
@@ -24,6 +47,31 @@ function run(command, args, { input, quiet = false } = {}) {
     }
   });
 }
+
+async function requireReachableSteamMachine() {
+  let address;
+  try {
+    ({ address } = await lookup(steamHost));
+  } catch {
+    throw new Error(`Cannot find ${steamHost}. Make sure the Steam Machine is awake and on the same network.`);
+  }
+
+  await new Promise((resolveConnection, reject) => {
+    const socket = createConnection({ host: address, port: 22 });
+    const fail = () => {
+      socket.destroy();
+      reject(new Error(`SSH is not reachable on ${steamHost}. Make sure sshd is enabled and the Steam Machine is awake.`));
+    };
+    socket.setTimeout(5000, fail);
+    socket.once("error", fail);
+    socket.once("connect", () => {
+      socket.destroy();
+      resolveConnection();
+    });
+  });
+}
+
+await requireReachableSteamMachine();
 
 if (
   (await run("ssh", ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5", remote, "true"], {
