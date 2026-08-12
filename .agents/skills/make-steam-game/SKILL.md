@@ -10,11 +10,12 @@ Guide the creator with short, plain explanations. Make routine technical decisio
 ## Start a game safely
 
 1. Check the current folder, Git remote, `game.config.json`, and `.starter-template`.
-2. If this is the source `jubishop/steam-starter` repository, do not turn it into the creator's game. Ask where to create a new folder, defaulting to `~/projects/<game-slug>`. Require a new or empty folder, then create the game from the GitHub template.
-3. If this is already a repository created from the template, personalize it in place.
-4. Ask for the game title and a one-sentence idea first. Derive a lowercase hyphenated slug. Ask whether its GitHub repository should be private or public only when creating one; recommend private for a child's game.
-5. Update `game.config.json`. Keep `appId` stable after the game has been added to Steam. Remove `.starter-template` only after the project is personalized.
-6. Do not ask which framework to use. Three.js, TypeScript, Electron, Vite, Vitest, and npm are the fixed foundation.
+2. Check the creator-computer tools in `references/setup.md`. Handle missing tools with a short explanation and parent approval before installing software.
+3. If this is the source `jubishop/steam-starter` repository, do not turn it into the creator's game. Ask where to create a new folder, defaulting to `~/projects/<game-slug>`. Require a new or empty folder, then create the game from the GitHub template.
+4. If this is already a repository created from the template, personalize it in place.
+5. Ask for the game title and a one-sentence idea first. Derive a lowercase hyphenated slug. Ask whether its GitHub repository should be private or public only when creating one; recommend private for a child's game.
+6. Update `game.config.json`. Keep `appId` stable after the game has been added to Steam. Remove `.starter-template` only after the project is personalized.
+7. Do not ask which framework to use. Three.js, TypeScript, Electron, Vite, Vitest, and npm are the fixed foundation.
 
 ## Build the game
 

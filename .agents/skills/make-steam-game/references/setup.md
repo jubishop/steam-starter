@@ -1,6 +1,12 @@
 # First-time setup
 
-There are three separate one-time steps. Explain which one is needed so the creator is not overwhelmed.
+There are four separate one-time checks or steps. Explain which one is needed so the creator is not overwhelmed.
+
+## 0. Check the creator computer
+
+Codex checks `node`, `npm`, `git`, `ssh`, `scp`, and `tar` before starting. Use Node.js 24 or newer. macOS and current Windows versions include the SSH and archive tools; Git or Node.js might still need installation.
+
+If a tool is missing, explain its purpose in one sentence. Ask a parent before installing system software. On Windows, prefer `winget`; on macOS, use the creator's existing package manager or the official installer. Verify each installed command before continuing. GitHub CLI (`gh`) is optional when Codex can create the repository through its GitHub connection.
 
 ## 1. Enable SSH on the Steam Machine
 

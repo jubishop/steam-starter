@@ -6,6 +6,9 @@
   "author": "Jubishop",
   "type": "module",
   "main": "electron/main.cjs",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "concurrently -k -n web,electron -c cyan,magenta \"npm:dev:web\" \"npm:dev:electron\"",
     "dev:web": "vite --host 127.0.0.1",

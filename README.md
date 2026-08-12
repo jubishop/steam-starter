@@ -12,6 +12,8 @@ Then say:
 
 Codex will ask a few short questions, personalize the starter, create the artwork, and build the game. The framework is already selected: Three.js, TypeScript, Electron, and npm.
 
+Use Node.js 24 or newer. Codex checks the required creator-computer tools and explains any one-time setup.
+
 ## Put it on the Steam Machine
 
 Say:
