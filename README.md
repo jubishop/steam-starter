@@ -8,7 +8,7 @@ The creator does not need Git, a GitHub account, or a copy of this repository. O
 
 > Read https://github.com/jubishop/steam-starter and help me make a new game.
 
-Codex will ask for the game's name, what it is about, and where to keep it. It will download the starter into a new local folder and continue from there.
+Codex will ask for the game's name, what it is about, and where to keep it. It will download the starter into a new local folder and make that folder the game's local Codex project. If the app requires the creator to select the folder, Codex will give one short instruction with the exact folder already prepared.
 
 ## Bootstrap instructions for Codex
 
@@ -17,8 +17,9 @@ When a creator references this repository but has not downloaded it:
 1. Ask for the game name, a one-sentence idea, and where to store it. Suggest `Documents\Games\<game-slug>` on Windows or `~/Games/<game-slug>` on macOS. Use only a new or empty destination folder.
 2. Download `https://github.com/jubishop/steam-starter/archive/refs/heads/main.zip` to a temporary location. Extract the contents of its `steam-starter-main` folder directly into the chosen destination.
 3. Do not require Git, GitHub, GitHub CLI, or a GitHub account. Do not initialize or publish a repository unless a parent later asks for that optional backup.
-4. Open the new game folder as the Codex workspace. Read `AGENTS.md` and `.agents/skills/make-steam-game/SKILL.md`, then personalize and build the game there.
-5. Check the local tools described in the skill's setup reference. Ask a parent before installing missing system software. Never ask for a password in chat.
+4. Add the destination as a local Codex project and make it the primary folder. If the current chat cannot change projects itself, stop and give the creator one short action with the exact path: add or open that folder as a local project, then start a Codex chat there. Do not continue game work in the bootstrap chat.
+5. In the game project's new chat, read `AGENTS.md` and `.agents/skills/make-steam-game/SKILL.md`, then personalize and build the game there.
+6. Check the local tools described in the skill's setup reference. Ask a parent before installing missing system software. Never ask for a password in chat.
 
 The framework is already selected: Three.js, TypeScript, Electron, Vite, Vitest, and npm.
 

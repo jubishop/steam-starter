@@ -12,7 +12,7 @@ Guide the creator with short, plain explanations. Make routine technical decisio
 1. Check the current folder, `game.config.json`, and `.starter-template`. Inspect Git only if it is available; it is optional.
 2. Check the creator-computer tools in `references/setup.md`. Handle missing tools with a short explanation and parent approval before installing software.
 3. If this is the source `jubishop/steam-starter` repository, do not turn it into the creator's game. Ask where to create a new folder, require a new or empty destination, and copy the starter contents there without its `.git` directory.
-4. If this is a downloaded starter in the creator's chosen game folder, personalize it in place.
+4. If this is a downloaded starter, confirm its folder is the local project's primary folder before personalizing it. If not, give the creator one short instruction to add or open that exact folder and start a Codex chat there.
 5. Ask for the game title and a one-sentence idea first. Derive a lowercase hyphenated slug. Do not ask about GitHub. Local-only is the default; a parent can request optional version control or online backup later.
 6. Update `game.config.json`. Keep `appId` stable after the game has been added to Steam. Remove `.starter-template` only after the project is personalized.
 7. Do not ask which framework to use. Three.js, TypeScript, Electron, Vite, Vitest, and npm are the fixed foundation.
