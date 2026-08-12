@@ -36,7 +36,7 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run dist:linux
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: steam-game-linux-x64
           path: release/*.AppImage
