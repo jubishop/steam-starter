@@ -1,8 +1,10 @@
 const game = require("./game.config.json");
+const electronDist = process.env.STEAM_GAME_ELECTRON_DIST;
 
 module.exports = {
   appId: game.appId,
   productName: game.title,
+  ...(electronDist ? { electronDist } : {}),
   extraMetadata: {
     desktopName: `${game.appId}.desktop`,
   },
