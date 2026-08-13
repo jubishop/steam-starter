@@ -60,7 +60,7 @@ async function requireReachableSteamMachine() {
     const socket = createConnection({ host: address, port: 22 });
     const fail = () => {
       socket.destroy();
-      reject(new Error(`SSH is not reachable on ${steamHost}. Make sure sshd is enabled and the Steam Machine is awake.`));
+      reject(new Error(`The Steam Machine did not answer on ${steamHost}. Power it on or wake it, confirm it is on the same network, and try again.`));
     };
     socket.setTimeout(5000, fail);
     socket.once("error", fail);

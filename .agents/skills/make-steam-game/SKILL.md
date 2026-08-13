@@ -9,13 +9,17 @@ Guide the creator with short, plain explanations. Make routine technical decisio
 
 ## Start a game safely
 
-1. Check the current folder, `game.config.json`, and `.starter-template`. Inspect Git only if it is available; it is optional.
+1. Check the current folder, `game.config.json`, `.starter-template`, and `.agents/game-brief.md` when present. Inspect Git only if it is available; it is optional.
 2. Check the creator-computer tools in `references/setup.md`. Handle missing tools with a short explanation and parent approval before installing software.
 3. If this is the source `jubishop/steam-starter` repository, do not turn it into the creator's game. Ask where to create a new folder, require a new or empty destination, and copy the starter contents there without its `.git` directory.
 4. If this is a downloaded starter, confirm its folder is the local project's primary folder before personalizing it. If not, give the creator one short instruction to add or open that exact folder and start a Codex chat there.
-5. Ask for the game title and a one-sentence idea first. A folder name or title alone is not a game idea: if the creator supplies only one, ask for the other before personalizing. Do not infer the design from the sample gameplay or simply relabel and deploy the sample as the creator's game. Derive a lowercase hyphenated slug. Do not ask about GitHub. Local-only is the default; a parent can request optional version control or online backup later.
-6. Update `game.config.json`. Keep `appId` stable after the game has been added to Steam. Remove `.starter-template` only after the project is personalized.
+5. If `.agents/game-brief.md` exists, use its title and one-sentence idea without asking the creator to repeat them. Otherwise ask for both first. A folder name or title alone is not a game idea: if the creator supplies only one, ask for the other before personalizing. Do not infer the design from the sample gameplay or simply relabel and deploy the sample as the creator's game. Derive a lowercase hyphenated slug. Do not ask about GitHub. Local-only is the default; a parent can request optional version control or online backup later.
+6. Update `game.config.json`. Keep `appId` stable after the game has been added to Steam. Remove `.starter-template` and the temporary game brief only after the requested core loop is playable, the sample identity is gone, and `npm run check` passes.
 7. Do not ask which framework to use. Three.js, TypeScript, Electron, Vite, Vitest, and npm are the fixed foundation.
+
+## Create from a clean creative slate
+
+Read [references/creative-slate.md](references/creative-slate.md) before personalizing gameplay, visuals, UI, or artwork. Derive the new game's identity from the creator's brief before making implementation choices. The included arena is disposable example content, not an art direction or a game design to reskin.
 
 ## Build the game
 
@@ -28,6 +32,7 @@ Guide the creator with short, plain explanations. Make routine technical decisio
 - Keep Electron `contextIsolation`, sandboxing, and disabled Node integration.
 - Store save data in Electron's user-data directory, never inside `/home/deck/Games/<game-slug>`.
 - Add focused tests for input selection and pure game rules. Run `npm run check` after material changes.
+- Finish and validate the smallest playable version of the creator's requested core loop and creative direction before offering deployment.
 
 ## Create artwork
 
@@ -35,19 +40,19 @@ Read [references/artwork.md](references/artwork.md) before creating or changing 
 
 ## Set up the Steam Machine
 
-Read [references/setup.md](references/setup.md) when SSH is not ready or this is the creator's first game on this computer. Never ask the creator to paste a password into chat. A parent-provided password is entered only into a system or terminal password prompt.
+Probe noninteractive SSH before discussing setup. If the Steam Machine does not respond, ask the creator to power it on or wake it, then retry. Propose the one-time `sshd` activation only after the creator explicitly confirms that the machine is definitely on and on the same network but port 22 still does not respond. If `deck@steamdeck.local` accepts the creator computer's key, do not repeat password or first-computer instructions. Read [references/setup.md](references/setup.md) only when the confirmed-online machine needs SSH activation or computer trust, or when the Non-Steam shortcut is missing. Never ask the creator to paste a password into chat. A parent-provided password is entered only into a system or terminal password prompt.
 
 ## Deploy without sending the creator to a terminal
 
 Treat requests such as “deploy,” “update my game,” “ship it,” “put this on the Steam Machine,” and “let me play the latest version” as authorization to perform the normal deployment workflow:
 
-1. Run `npm run check`. Fix failures caused by the current work and re-run it.
-   If `.starter-template` still exists, stop and finish personalization before deploying. The sample game must not ship under a creator's title.
-2. Confirm SSH with `deck@steamdeck.local`. If first-time setup is needed, follow `references/setup.md` and run `npm run setup:steam` interactively for the creator.
-3. Run `npm run shipit` yourself. Do not tell the creator to type it or open a terminal for routine deployments.
-4. If the script says the Steam shortcut is missing, guide the creator through the one-time Desktop Mode step in `references/setup.md`. Then run `npm run shipit` again yourself.
-5. Verify the remote launcher and `app.asar` match the local package. When the shortcut exists, also verify the compact artwork and any required Steam restart.
-6. Tell the creator the game is ready and what to select in Gaming Mode.
+1. Confirm the current folder is the game project's primary folder and `.starter-template` is gone. If it remains, return to the start and build sections, finish the requested first playable version, and do not deploy the starter example.
+2. Run `npm run check`. Fix failures caused by the current work and re-run it.
+3. Probe SSH with `deck@steamdeck.local`. If the host or SSH port does not respond, ask the creator to power on or wake the Steam Machine and retry. Only after they confirm it is definitely on and on the same network should an unanswered port 22 lead to the one-time `sshd` activation instructions. If key authentication succeeds, continue silently. If the machine responds but does not trust this computer, follow `references/setup.md` and run `npm run setup:steam` interactively for the creator.
+4. Run `npm run shipit` yourself. Do not tell the creator to type it or open a terminal for routine deployments.
+5. If the script says the Steam shortcut is missing, guide the creator through the one-time Desktop Mode step in `references/setup.md`. Then run `npm run shipit` again yourself.
+6. Verify the remote launcher and `app.asar` match the local package. When the shortcut exists, also verify the compact artwork and any required Steam restart.
+7. Tell the creator the game is ready and what to select in Gaming Mode.
 
 Deployment does not by itself authorize publishing source code. Use Git only when it is already configured or a parent asks for version control or online backup. Never make a child's game public by default.
 

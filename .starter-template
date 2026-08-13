@@ -1,1 +1,1 @@
-This marker means the starter has not been personalized. Remove it after game.config.json and the artwork describe the new game.
+This marker means the starter has not been fully personalized. The included arena, mechanics, visual style, UI, and artwork are disposable examples, not the new game's creative direction. Remove this file only after the requested core loop is playable, the sample identity has been replaced, the artwork and game.config.json describe the new game, and npm run check passes.
