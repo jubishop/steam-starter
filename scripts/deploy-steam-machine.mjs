@@ -1,6 +1,8 @@
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
+import { lookup } from "node:dns/promises";
 import { chmod, copyFile, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { createConnection } from "node:net";
 import { dirname, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -119,13 +121,38 @@ async function verifySame(localPath, remotePath, label) {
   console.log(`Verified ${label}.`);
 }
 
+async function requireReachableSteamMachine() {
+  let address;
+  try {
+    ({ address } = await lookup(steamHost));
+  } catch {
+    throw new Error(`Cannot find ${steamHost}. Power on or wake the Steam Machine, confirm it is on the same network, and try again.`);
+  }
+
+  await new Promise((resolveConnection, reject) => {
+    const socket = createConnection({ host: address, port: 22 });
+    const fail = () => {
+      socket.destroy();
+      reject(new Error(`The Steam Machine did not answer on ${steamHost}. Power it on or wake it, confirm it is on the same network, and try again.`));
+    };
+    socket.setTimeout(5000, fail);
+    socket.once("error", fail);
+    socket.once("connect", () => {
+      socket.destroy();
+      resolveConnection();
+    });
+  });
+}
+
+await requireReachableSteamMachine();
+
 const sshReady = await run(
   "ssh",
   ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5", remote, "true"],
   { quiet: true },
 );
 if (sshReady.code !== 0) {
-  throw new Error("Steam Machine SSH is not ready. Run npm run setup:steam once, then deploy again.");
+  throw new Error("The Steam Machine is reachable but does not trust this computer yet. Run npm run setup:steam once, then deploy again.");
 }
 
 console.log("Building the Linux x64 game...");

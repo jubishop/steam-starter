@@ -1,6 +1,6 @@
 # Steam artwork
 
-Create one cohesive, original master illustration from the creator's game idea. Use image generation when available. Do not imitate protected characters, logos, or a named game's distinctive art.
+Replace the starter artwork with one cohesive, original master illustration from the creator's game idea. The included images are placeholders and must not influence the new game's palette, composition, characters, or logo. Use image generation when available. Do not imitate protected characters, logos, or a named game's distinctive art.
 
 Keep the important subject inside the center 60–65 percent so portrait and wide crops remain useful. Create the wordmark separately so text is exact and can have transparency.
 

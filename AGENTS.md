@@ -7,12 +7,13 @@ This repository is a controller-first Steam Machine game starter for new creator
 - Target 1920×1080 fullscreen at 60 FPS.
 - Make every menu and gameplay action usable without a keyboard or mouse.
 - Keep gameplay and level values in small data files that Codex can edit safely.
+- Treat the included arena, mechanics, palette, UI, and artwork as disposable examples. Every personalized game needs its own creative direction derived from the creator's idea.
 
 ## Required skill
 
 Use `.agents/skills/make-steam-game/SKILL.md` when the user wants to create, change, test, package, deploy, update, or play the latest version of this game on the Steam Machine.
 
-When the user asks to deploy, update the Steam Machine, ship the game, run `shipit`, or play the latest version, validate the game and run `npm run shipit` for them. Do not tell the user to open a terminal for routine work.
+When the user asks to deploy, update the Steam Machine, ship the game, run `shipit`, or play the latest version, first confirm this is the personalized game project and `.starter-template` is gone. If the marker remains, finish the first playable version instead of deploying the starter example. Otherwise, validate the game and run `npm run shipit` for them. Do not tell the user to open a terminal for routine work.
 
 ## Safety
 

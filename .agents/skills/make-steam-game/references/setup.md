@@ -2,6 +2,8 @@
 
 There are four separate one-time checks or steps. Explain which one is needed so the creator is not overwhelmed.
 
+Always detect the current state before giving instructions. First try noninteractive key authentication to `deck@steamdeck.local` with a short timeout. If the host or port 22 does not respond, ask the creator to power on or wake the Steam Machine and retry. Do not mention `sshd` unless the creator then explicitly confirms that the machine is definitely on and on the same network but port 22 still does not respond. If key authentication succeeds, SSH and computer trust are already complete, so do not mention passwords or key setup. If port 22 is reachable but key authentication fails, perform only the computer-trust step.
+
 ## 0. Check the creator computer
 
 Codex checks `node`, `npm`, `ssh`, `scp`, and `tar` before starting. Use Node.js 24 or newer. macOS and current Windows versions include the SSH and archive tools; Node.js might still need installation. Git is optional and must not block game creation or deployment.
