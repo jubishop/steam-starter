@@ -1,10 +1,12 @@
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { lookup } from "node:dns/promises";
-import { chmod, copyFile, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { access, chmod, copyFile, cp, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { createConnection } from "node:net";
 import { dirname, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { isMatchingElectronDistribution, npmInvocation } from "./lib/deployment.mjs";
 
 process.on("uncaughtException", reportFailure);
 process.on("unhandledRejection", reportFailure);
@@ -23,7 +25,11 @@ function reportFailure(error) {
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const releaseDirectory = resolve(projectRoot, "release");
 const buildDirectory = resolve(releaseDirectory, "linux-unpacked");
+const buildTempDirectory = `${buildDirectory}.tmp`;
+const electronDistDirectory = resolve(releaseDirectory, "electron-linux-x64");
 const game = JSON.parse(await readFile(resolve(projectRoot, "game.config.json"), "utf8"));
+const packageMetadata = JSON.parse(await readFile(resolve(projectRoot, "package.json"), "utf8"));
+const electronVersion = packageMetadata.devDependencies?.electron;
 const steamHost = process.env.STEAM_MACHINE_HOST || "steamdeck.local";
 const steamUser = process.env.STEAM_MACHINE_USER || "deck";
 const remote = `${steamUser}@${steamHost}`;
@@ -39,6 +45,17 @@ if (!/^[a-z0-9][a-z0-9-]*$/u.test(game.slug)) {
 }
 if (!/^[A-Za-z][A-Za-z0-9.-]+$/u.test(game.appId)) {
   throw new Error("game.config.json appId is not valid.");
+}
+if (typeof electronVersion !== "string" || !/^\d+\.\d+\.\d+$/u.test(electronVersion)) {
+  throw new Error("package.json must pin Electron to an exact version for deployment.");
+}
+try {
+  await access(resolve(projectRoot, ".starter-template"));
+  throw new Error("Finish personalizing the game and remove .starter-template before deployment.");
+} catch (error) {
+  if (error?.code !== "ENOENT") {
+    throw error;
+  }
 }
 
 const remoteDirectory = process.env.STEAM_MACHINE_TARGET || `/home/${steamUser}/Games/${game.slug}`;
@@ -144,6 +161,39 @@ async function requireReachableSteamMachine() {
   });
 }
 
+async function packageLinux() {
+  await rm(buildDirectory, { recursive: true, force: true });
+  await rm(buildTempDirectory, { recursive: true, force: true });
+
+  if (await isMatchingElectronDistribution(electronDistDirectory, electronVersion)) {
+    process.env.STEAM_GAME_ELECTRON_DIST = electronDistDirectory;
+  } else {
+    delete process.env.STEAM_GAME_ELECTRON_DIST;
+    await rm(electronDistDirectory, { recursive: true, force: true });
+  }
+
+  const npm = npmInvocation();
+  const firstAttempt = await run(npm.command, [...npm.args, "run", "package:linux"]);
+  if (firstAttempt.code === 0) {
+    return;
+  }
+
+  const canRecoverWindowsExtraction =
+    process.platform === "win32" &&
+    !process.env.STEAM_GAME_ELECTRON_DIST &&
+    await isMatchingElectronDistribution(buildTempDirectory, electronVersion);
+  if (!canRecoverWindowsExtraction) {
+    throw new Error(`${npm.command} exited with status ${firstAttempt.code}.`);
+  }
+
+  console.log("Windows held Electron's extracted folder open; caching it and retrying the package...");
+  await cp(buildTempDirectory, electronDistDirectory, { recursive: true });
+  await rm(buildDirectory, { recursive: true, force: true });
+  await rm(buildTempDirectory, { recursive: true, force: true });
+  process.env.STEAM_GAME_ELECTRON_DIST = electronDistDirectory;
+  await mustRun(npm.command, [...npm.args, "run", "package:linux"]);
+}
+
 await requireReachableSteamMachine();
 
 const sshReady = await run(
@@ -156,9 +206,7 @@ if (sshReady.code !== 0) {
 }
 
 console.log("Building the Linux x64 game...");
-await rm(buildDirectory, { recursive: true, force: true });
-const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
-await mustRun(npmCommand, ["run", "package:linux"]);
+await packageLinux();
 
 await rename(resolve(buildDirectory, game.slug), binaryPath);
 await copyFile(resolve(projectRoot, "packaging/steam-launcher"), wrapperPath);
