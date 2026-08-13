@@ -15,7 +15,7 @@
     "dev:electron": "wait-on http://127.0.0.1:5173 && electron . --dev",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "scripts:check": "node --check scripts/build-artwork.mjs && node --check scripts/deploy-steam-machine.mjs && node --check scripts/setup-steam-ssh.mjs && node --check scripts/validate-artwork.mjs && node --check scripts/validate-config.mjs",
+    "scripts:check": "node --check scripts/build-artwork.mjs && node --check scripts/deploy-steam-machine.mjs && node --check scripts/lib/deployment.mjs && node --check scripts/setup-steam-ssh.mjs && node --check scripts/validate-artwork.mjs && node --check scripts/validate-config.mjs",
     "config:check": "node scripts/validate-config.mjs",
     "art:build": "node scripts/build-artwork.mjs",
     "art:check": "node scripts/validate-artwork.mjs",

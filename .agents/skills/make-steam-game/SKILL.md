@@ -13,7 +13,7 @@ Guide the creator with short, plain explanations. Make routine technical decisio
 2. Check the creator-computer tools in `references/setup.md`. Handle missing tools with a short explanation and parent approval before installing software.
 3. If this is the source `jubishop/steam-starter` repository, do not turn it into the creator's game. Ask where to create a new folder, require a new or empty destination, and copy the starter contents there without its `.git` directory.
 4. If this is a downloaded starter, confirm its folder is the local project's primary folder before personalizing it. If not, give the creator one short instruction to add or open that exact folder and start a Codex chat there.
-5. Ask for the game title and a one-sentence idea first. Derive a lowercase hyphenated slug. Do not ask about GitHub. Local-only is the default; a parent can request optional version control or online backup later.
+5. Ask for the game title and a one-sentence idea first. A folder name or title alone is not a game idea: if the creator supplies only one, ask for the other before personalizing. Do not infer the design from the sample gameplay or simply relabel and deploy the sample as the creator's game. Derive a lowercase hyphenated slug. Do not ask about GitHub. Local-only is the default; a parent can request optional version control or online backup later.
 6. Update `game.config.json`. Keep `appId` stable after the game has been added to Steam. Remove `.starter-template` only after the project is personalized.
 7. Do not ask which framework to use. Three.js, TypeScript, Electron, Vite, Vitest, and npm are the fixed foundation.
 
@@ -42,6 +42,7 @@ Read [references/setup.md](references/setup.md) when SSH is not ready or this is
 Treat requests such as “deploy,” “update my game,” “ship it,” “put this on the Steam Machine,” and “let me play the latest version” as authorization to perform the normal deployment workflow:
 
 1. Run `npm run check`. Fix failures caused by the current work and re-run it.
+   If `.starter-template` still exists, stop and finish personalization before deploying. The sample game must not ship under a creator's title.
 2. Confirm SSH with `deck@steamdeck.local`. If first-time setup is needed, follow `references/setup.md` and run `npm run setup:steam` interactively for the creator.
 3. Run `npm run shipit` yourself. Do not tell the creator to type it or open a terminal for routine deployments.
 4. If the script says the Steam shortcut is missing, guide the creator through the one-time Desktop Mode step in `references/setup.md`. Then run `npm run shipit` again yourself.
