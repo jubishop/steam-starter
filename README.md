@@ -47,3 +47,21 @@ Codex probes SSH before discussing setup. If the Steam Machine does not respond,
 - GitHub Actions validation for copies that are later published
 
 Detailed guidance lives in [the project skill](.agents/skills/make-steam-game/SKILL.md).
+
+## Project maintenance
+
+These optional maintainer tools apply to Git checkouts on macOS or Linux.
+Game creation and deployment retain the Node-only macOS/Windows workflow.
+
+Run `bin/setup` to prepare local knowledge search and Git hooks. It requires
+Git and Python 3.9 or later; QMD and direnv are optional. Install ShellCheck
+for checks. Follow the [task workflow](docs/task-tracking.md) to initialize td.
+
+Use `bin/check --documents-only` for Markdown changes, `bin/check` for
+foundation static checks, and `bin/check --full` for foundation behavior tests
+and the project checks listed in the [development workflow](docs/development-workflow.md).
+Use `bin/doctor` to inspect setup. Keep application tools out of routine checks.
+
+- [Memory](memory/README.md): durable project guidance and context.
+- [Documents](docs/README.md): designs, decisions, research, and reference guides.
+- [Git remotes](docs/git-remotes.md): existing hosts and fresh-clone push setup.

@@ -6,3 +6,17 @@ release/
 coverage/
 __pycache__/
 *.pyc
+
+
+# td
+.todos/
+
+# Local project foundation state
+.cache/
+.config/qmd/
+.env
+.env.*
+!.env.example
+.envrc.local
+*.py[cod]
+worktrees/

@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+"""Run application validation explicitly, after the foundation checks."""
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+os.chdir(ROOT)
+ENV = {key: value for key, value in os.environ.items()
+       if not key.startswith("GIT_") and key not in {"PYTHONPATH", "PYTHONHOME"}}
+ENV["PYTHONDONTWRITEBYTECODE"] = "1"
+
+def run(*command, capture=False):
+    result = subprocess.run(command, cwd=ROOT, env=ENV, text=True,
+                            capture_output=capture, check=True)
+    return result.stdout.strip() if capture else ""
+
+
+def node_runtime(majors):
+    version = run("node", "--version", capture=True)
+    if int(version.lstrip('v').split('.')[0]) not in majors:
+        raise RuntimeError(f"Node {version} is unsupported for application checks; select Node {', '.join(map(str, majors))}.")
+
+
+def main():
+    node_runtime((24,))
+    run("npm", "run", "check")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (OSError, RuntimeError, ValueError, subprocess.CalledProcessError) as error:
+        print(error, file=sys.stderr)
+        sys.exit(1)
