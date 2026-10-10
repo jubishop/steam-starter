@@ -20,6 +20,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: lts/*
+          check-latest: true
           cache: npm
       - run: npm ci
       - run: npm run art:build
@@ -36,6 +37,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: lts/*
+          check-latest: true
           cache: npm
       - run: npm ci
       - name: Install foundation check dependencies
