@@ -33,8 +33,8 @@ Creator commands and Steam deployment remain unchanged.
 
 Follow the [check schedule](foundation/engineering-policy.md#checks). Run
 `npm ci` to install application dependencies first. `bin/check-application`,
-which `bin/check --full` runs after the foundation checks, verifies Node 24,
-runs the Python tooling tests in `tests/`, and then runs the existing
+which `bin/check --full` runs after the foundation checks, verifies Node 24 or
+newer, runs the Python tooling tests in `tests/`, and then runs the existing
 `npm run check` (tests, script/config/art checks, and production build).
 `tests/test_check_application.py` covers its order, runtime gate, and failure
 handling.
@@ -46,10 +46,10 @@ delivered revision; a local pass does not establish a remote result.
 
 ## Runtime and toolchain versions
 
-Node 24 is selected by `.nvmrc` and CI, and `package.json` requires Node 24 or
-later. `bin/check-application` stops before any check under another Node major.
-Maintainer tooling needs Python 3.9 or later. Follow the
-[version policy](foundation/engineering-policy.md#runtime-and-toolchain-versions).
+`.nvmrc` and CI select the latest Node LTS (`lts/*`), and `package.json`
+requires Node 24 or later. `bin/check-application` stops before any check only
+when Node is older than 24. Maintainer tooling needs Python 3.9 or later.
+Follow the [version policy](foundation/engineering-policy.md#runtime-and-toolchain-versions).
 
 ## Deployment
 

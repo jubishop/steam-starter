@@ -64,12 +64,22 @@ class CheckApplicationTests(unittest.TestCase):
         environment = {"GIT_DIR": None, "PYTHONPATH": None, "PYTHONHOME": None, "PYTHONDONTWRITEBYTECODE": "1"}
         self.assertEqual(self.recorded(), [["tooling tests"], ["npm", "run", "check", str(self.repo), environment]])
 
-    def test_unsupported_or_missing_node_stops_before_any_check(self):
-        for version in ("v18.0.0", "v22.18.0", "v26.1.0"):
+    def test_newer_node_majors_run_the_checks(self):
+        for version in ("v26.1.0", "v28.0.0"):
+            with self.subTest(version=version):
+                result = self.check(CHECK_NODE_VERSION=version)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual([event[:3] for event in self.recorded()],
+                                 [["tooling tests"], ["npm", "run", "check"]])
+                self.events.unlink()
+
+    def test_node_below_minimum_or_missing_stops_before_any_check(self):
+        for version in ("v18.0.0", "v22.18.0", "v23.9.0"):
             with self.subTest(version=version):
                 result = self.check(CHECK_NODE_VERSION=version)
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn(f"Node {version} is unsupported", result.stderr)
+                self.assertIn("Node 24 or newer", result.stderr)
                 self.assertEqual(self.recorded(), [])
         (self.tools / "node").unlink()
         result = self.check()

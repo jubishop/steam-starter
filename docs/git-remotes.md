@@ -9,8 +9,11 @@ destination. Preserve the existing hosts, visibility, and branch settings.
 
 | Remote | URL |
 | --- | --- |
-| Primary (`origin`) | `https://github.com/jubishop/steam-starter.git` |
+| Primary (`origin`) | `git@github.com:jubishop/steam-starter.git` |
 | Secondary (`sourcehut`) | `git@git.sr.ht:~jubi/steam-starter` |
+
+GitHub uses SSH for fetching and pushing because HTTPS pushes that changed
+workflow files failed.
 
 ## Restore a fresh clone
 
@@ -18,8 +21,9 @@ Inspect `git remote -v` and `git remote get-url --push --all origin` first.
 In a fresh clone with only the primary origin URL, configure:
 
 ```sh
+git remote set-url origin git@github.com:jubishop/steam-starter.git
 git remote add sourcehut git@git.sr.ht:~jubi/steam-starter
-git remote set-url --add --push origin https://github.com/jubishop/steam-starter.git
+git remote set-url --add --push origin git@github.com:jubishop/steam-starter.git
 git remote set-url --add --push origin git@git.sr.ht:~jubi/steam-starter
 git config --local remote.pushDefault origin
 git config --local push.autoSetupRemote true

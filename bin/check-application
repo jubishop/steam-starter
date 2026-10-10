@@ -17,14 +17,15 @@ def run(*command, capture=False):
     return result.stdout.strip() if capture else ""
 
 
-def node_runtime(majors):
+def node_runtime(minimum):
     version = run("node", "--version", capture=True)
-    if int(version.lstrip('v').split('.')[0]) not in majors:
-        raise RuntimeError(f"Node {version} is unsupported for application checks; select Node {', '.join(map(str, majors))}.")
+    if int(version.lstrip('v').split('.')[0]) < minimum:
+        raise RuntimeError(f"Node {version} is unsupported for application checks; Node {minimum} or newer "
+                           "is required. Select the latest LTS from .nvmrc, for example with `fnm use`.")
 
 
 def main():
-    node_runtime((24,))
+    node_runtime(24)
     run(sys.executable, "-B", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py", "-v")
     run("npm", "run", "check")
 
