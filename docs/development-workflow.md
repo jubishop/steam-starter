@@ -41,18 +41,8 @@ handling.
 
 GitHub validation is defined in [the workflow](../.github/workflows/build.yml).
 CI integrates the full foundation check into the Linux job and keeps the
-macOS/Windows creator checks. Require successful full CI for the delivered revision, except for the
-confirmed capacity exception below. A local pass does not establish a remote
-result.
-
-If GitHub CI is blocked solely by confirmed Actions quota exhaustion or
-GitHub rate limiting, run `bin/check --full` and all equivalent required
-checks locally on the exact revision being delivered. Once they pass,
-continue the normal review, merge, and cleanup process without waiting for
-hosted CI. Record the blocker, tested revision, commands, and results; report
-CI as unavailable, not passed. Actual test failures, unknown failures, and
-checks that cannot be validated locally remain blockers. Do not bypass
-enforced branch protections, required approvals, or deployment gates.
+macOS/Windows creator checks. Full CI success must be checked for the
+delivered revision; a local pass does not establish a remote result.
 
 ## Runtime and toolchain versions
 
