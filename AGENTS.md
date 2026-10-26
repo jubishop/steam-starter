@@ -13,9 +13,6 @@ take precedence over this block and the foundation pages wherever they differ.
   repair fails, pause knowledge-dependent work until the user approves a
   fallback; never silently substitute `rg` or direct reads. See
   [search failures](docs/foundation/knowledge-search.md#search-failures).
-- Use td for work with multiple stages, interruptions, blockers, or handoffs;
-  run `td usage --new-session -q` once per new context and keep handoffs
-  current. See [task tracking](docs/foundation/task-tracking.md).
 - Follow the [engineering policy](docs/foundation/engineering-policy.md):
   fewer dependencies, red-green tests for behavior changes, flaky tests fixed
   or filed as an issue right away, cohesive files and pages, checkout-isolated
@@ -68,8 +65,8 @@ When the user asks to deploy, update the Steam Machine, ship the game, run `ship
 
 The Project Starter tooling in the block above is optional maintainer tooling
 for a Git checkout on macOS or Linux; game creators keep the Node-only
-macOS/Windows workflow. Do not require Git, Python, ShellCheck, QMD, direnv,
-or td to create, test, package, or deploy a game. Search knowledge when QMD
+macOS/Windows workflow. Do not require Git, Python, ShellCheck, QMD, or
+direnv to create, test, package, or deploy a game. Search knowledge when QMD
 is configured, and run `bin/setup` only for maintainer checkouts. When these
 tools are not configured, use the Markdown sources and `npm run check`; a
 configured QMD failure still follows the recovery policy above.

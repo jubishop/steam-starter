@@ -5,8 +5,6 @@ release/
 coverage/
 *.pyc
 
-# td
-
 # Local project foundation state
 
 # project-starter:begin
@@ -20,5 +18,4 @@ coverage/
 __pycache__/
 *.py[cod]
 worktrees/
-.todos/
 # project-starter:end

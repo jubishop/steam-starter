@@ -16,15 +16,14 @@ bin/check --full
 ```
 
 Setup needs Git and Python 3.9 or later, and checks also need ShellCheck.
-QMD and direnv are optional; setup reports skipped features. Install td and
-run `td init` as described in [task tracking](foundation/task-tracking.md).
+QMD and direnv are optional; setup reports skipped features.
 Create `.envrc` only when the project needs environment settings, and review
 it before running `direnv allow`; search does not need it.
 
 ## Project commands and boundaries
 
 The maintainer foundation is optional for game creators. Its Git, Python,
-ShellCheck, QMD, direnv, and td tools are supported on macOS and Linux; they
+ShellCheck, QMD, and direnv tools are supported on macOS and Linux; they
 do not become prerequisites for the Node-only macOS/Windows game workflow.
 This boundary was confirmed on October 1, 2026 to preserve creator portability.
 Creator commands and Steam deployment remain unchanged.
