@@ -46,6 +46,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
+          fetch-depth: 0
       # setup-node's lts/* can lag nodejs.org when a new major turns LTS; see
       # docs/foundation/engineering-policy.md#runtime-and-toolchain-versions.
       - name: Find the newest Node LTS on nodejs.org
