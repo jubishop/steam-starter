@@ -40,13 +40,13 @@ Read [references/artwork.md](references/artwork.md) before creating or changing 
 
 Before discussing setup, probe noninteractive SSH key authentication to `deck@steamdeck.local` with a short timeout; `npm run shipit` probes the same way and reports which case applies.
 
-- **Key accepted:** setup is complete, so don't mention passwords or computer trust.
+- **Key accepted:** SSH setup is complete, so don't mention passwords or computer trust.
 - **No answer:** ask the creator to power on or wake the Steam Machine, then retry. Propose the one-time `sshd` activation in [references/setup.md](references/setup.md) only after they confirm it is definitely on and on the same network but port 22 still doesn't answer.
 - **Port 22 answers but rejects the key:** perform only setup.md's computer-trust step.
 - **Shortcut missing:** guide the creator through setup.md's one-time Non-Steam Game step.
 
 ## Deploy without sending the creator to a terminal
 
-Run `npm run shipit` yourself. It runs `npm run check`, refuses the starter example, probes SSH, deploys, and verifies the deployed files and Steam restart. Fix check failures from the current work, handle setup states as the section above says, and rerun it until it succeeds. Then tell the creator the game is ready and what to select in Gaming Mode.
+Run `npm run shipit` yourself. It runs `npm run check`, refuses the starter example, probes SSH, deploys, and verifies the deployed files and Steam restart. Fix check failures from the current work, handle setup states as the section above says, and rerun it until it succeeds with the Steam shortcut found. Then tell the creator the game is ready and what to select in Gaming Mode.
 
 Read [references/deployment.md](references/deployment.md) when changing deployment scripts, diagnosing Steam launch behavior, or adding another Steam Machine.
