@@ -37,30 +37,26 @@ This repository is a controller-first Steam Machine game starter for new creator
 - Support one to four local controllers.
 - Target 1920×1080 fullscreen at 60 FPS.
 - Make every menu and gameplay action usable without a keyboard or mouse.
-- Keep gameplay and level values in small data files that Codex can edit safely.
+- Keep gameplay and level values in small, safely editable data files under `src/game/data/`.
 - Treat the included arena, mechanics, palette, UI, and artwork as disposable examples. Every personalized game needs its own creative direction derived from the creator's idea.
 
 ## Required skill
 
-Use `.agents/skills/make-steam-game/SKILL.md` when the user wants to create, change, test, package, deploy, update, or play the latest version of this game on the Steam Machine.
-
-When the user asks to deploy, update the Steam Machine, ship the game, run `shipit`, or play the latest version, first confirm this is the personalized game project and `.starter-template` is gone. If the marker remains, finish the first playable version instead of deploying the starter example. Otherwise, validate the game and run `npm run shipit` for them. Do not tell the user to open a terminal for routine work.
+Use the [make-steam-game skill](.agents/skills/make-steam-game/SKILL.md) to create, change, test, package, or deploy this game. When the user asks to deploy, ship, or play the latest version, run its deployment workflow for them, but while `.starter-template` remains, finish the first playable version instead of deploying the starter example. Never send the user to a terminal for routine work.
 
 ## Safety
 
-- The Steam Machine defaults are `deck@steamdeck.local` and `/home/deck/Games/<game-slug>`.
 - Never request, display, or store the Steam Machine password in chat or repository files.
-- Never reuse a nonempty local folder for a new game. Deploy only to the remote directory derived from the current game's validated slug.
+- Never reuse a nonempty local folder for a new game. Deploy only to the folder derived from the current game's validated slug, `/home/deck/Games/<game-slug>` on `deck@steamdeck.local` by default.
 - Keep saves outside the deployed game directory so a clean deployment cannot remove progress.
-- Keep creator-side scripts portable across macOS and Windows. Use Node and standard OpenSSH tools; do not require Fish or `rsync`.
-- Treat Git and GitHub as optional backup tools. They must not block creating, changing, or deploying a game.
 
-## Project foundation
+## Creator tools
 
-The Project Starter tooling in the block above is optional maintainer tooling
-for a Git checkout on macOS or Linux; game creators keep the Node-only
-macOS/Windows workflow. Do not require Git, Python, ShellCheck, QMD, or
-direnv to create, test, package, or deploy a game. Search knowledge when QMD
-is configured, and run `bin/setup` only for maintainer checkouts. When these
-tools are not configured, use the Markdown sources and `npm run check`; a
-configured QMD failure still follows the recovery policy above.
+Keep creator-side scripts portable across macOS and Windows with Node and
+standard OpenSSH tools, and never require Git, GitHub, Python, ShellCheck,
+QMD, direnv, Fish, or `rsync` to create, change, test, package, or deploy a
+game; Git and GitHub are optional backups. The Project Starter tooling in the
+block above is optional maintainer tooling for Git checkouts on macOS or
+Linux: run `bin/setup` only there, and where it isn't configured, read the
+Markdown sources instead of searching and run `npm run check` instead of
+`bin/check`.
