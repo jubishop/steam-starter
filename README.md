@@ -21,7 +21,7 @@ When a creator references this repository but has not downloaded it:
 5. Add the destination as a local Codex project and make it the primary folder. If the current chat cannot change projects itself, stop and give the creator one short action with the exact path and prompt: open that folder as a local project, then say `Continue from .agents/game-brief.md and build my first playable version.`
 6. Do not continue game work or deployment in the bootstrap chat. If the creator asks there, explain that the starter is prepared but the game is not built yet, then repeat the exact project-opening action.
 7. In the game project's new chat, read `AGENTS.md`, `.agents/skills/make-steam-game/SKILL.md`, and `.agents/game-brief.md`. Establish a fresh creative direction from the brief, replace the starter's sample identity and mechanics, then build and validate the first playable version before offering deployment.
-8. Check the local tools described in the skill's setup reference. Ask a parent before installing missing system software. Never ask for a password in chat.
+8. Check the local tools the skill lists. Ask a parent before installing missing system software. Never ask for a password in chat.
 
 The framework is already selected: Three.js, TypeScript, Electron, Vite, Vitest, and npm.
 

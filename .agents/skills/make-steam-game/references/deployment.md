@@ -2,6 +2,8 @@
 
 `npm run shipit` validates the game and runs the Node deployment script. The same command works from Codex on macOS and Windows. It invokes the current npm CLI through Node, avoiding Windows `.cmd` process-launch failures, and uses the operating system's standard `ssh`, `scp`, and `tar` commands; it does not need Fish or `rsync`.
 
+For another Steam Machine, `STEAM_MACHINE_HOST` and `STEAM_MACHINE_USER` override the `deck@steamdeck.local` default in both `npm run setup:steam` and the deployment, and `STEAM_MACHINE_TARGET` overrides the deployment's `/home/<user>/Games/<game-slug>` folder.
+
 The deployment:
 
 1. Reads the title, stable application ID, and slug from `game.config.json`.
@@ -17,7 +19,6 @@ The deployment:
 Safeguards:
 
 - Validate the slug, remote user, remote directory, Steam grid path, and shortcut ID before writes.
-- Never place saves in the deployed directory.
 - Preserve unrelated shortcuts and Steam artwork.
 - If a command fails after Steam stops, restart the Steam user service before reporting failure.
 - After deployment, compare hashes for the wrapper and `resources/app.asar`. When a shortcut exists, also verify the compact icon and confirm an initially active `steam-launcher.service` restarted.
