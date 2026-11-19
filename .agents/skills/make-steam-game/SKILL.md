@@ -1,6 +1,7 @@
 ---
 name: make-steam-game
 description: Build and maintain a beginner-friendly Three.js, TypeScript, and Electron game from macOS or Windows for a controller-only Steam Machine. Use when the user wants to start or personalize a game from this template; add gameplay, levels, menus, multiplayer, controllers, tests, or artwork; configure SSH; package the Linux app; or deploy, update, ship, sync, or play the latest version on the Steam Machine.
+disable-model-invocation: false
 ---
 
 # Make a Steam Game
