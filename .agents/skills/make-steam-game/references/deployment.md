@@ -2,7 +2,7 @@
 
 `npm run shipit` validates the game and runs the Node deployment script. The same command works from Codex on macOS and Windows. It invokes the current npm CLI through Node, avoiding Windows `.cmd` process-launch failures, and uses the operating system's standard `ssh`, `scp`, and `tar` commands; it does not need Fish or `rsync`.
 
-For another Steam Machine, `STEAM_MACHINE_HOST` and `STEAM_MACHINE_USER` override the `deck@steamdeck.local` default in both `npm run setup:steam` and the deployment, and `STEAM_MACHINE_TARGET` overrides the deployment's `/home/<user>/Games/<game-slug>` folder.
+For another Steam Machine, `STEAM_MACHINE_HOST` and `STEAM_MACHINE_USER` override the `deck@steamdeck.local` default in `npm run status:steam`, `npm run setup:steam`, and the deployment, and `STEAM_MACHINE_TARGET` overrides the deployment's `/home/<user>/Games/<game-slug>` folder.
 
 The deployment:
 

@@ -1,9 +1,9 @@
 import { spawn } from "node:child_process";
-import { lookup } from "node:dns/promises";
 import { access, mkdir, readFile } from "node:fs/promises";
-import { createConnection } from "node:net";
 import { homedir } from "node:os";
 import { resolve } from "node:path";
+
+import { probeSteamMachine, steamMachineTarget } from "./lib/steam-machine.mjs";
 
 process.on("uncaughtException", reportFailure);
 process.on("unhandledRejection", reportFailure);
@@ -19,25 +19,15 @@ function reportFailure(error) {
   process.exitCode = 1;
 }
 
-const steamHost = process.env.STEAM_MACHINE_HOST || "steamdeck.local";
-const steamUser = process.env.STEAM_MACHINE_USER || "deck";
-const remote = `${steamUser}@${steamHost}`;
+const steamMachine = steamMachineTarget();
+const { host: steamHost, user: steamUser, remote } = steamMachine;
 const sshDirectory = resolve(homedir(), ".ssh");
 const keyPath = resolve(sshDirectory, "id_ed25519");
 
-if (!/^[A-Za-z0-9._-]+$/u.test(steamHost)) {
-  throw new Error("STEAM_MACHINE_HOST contains unsupported characters.");
-}
-if (!/^[A-Za-z0-9._-]+$/u.test(steamUser)) {
-  throw new Error("STEAM_MACHINE_USER contains unsupported characters.");
-}
-
-function run(command, args, { input, quiet = false } = {}) {
+function run(command, args, { input } = {}) {
   return new Promise((resolveRun, reject) => {
     const child = spawn(command, args, {
-      stdio: input === undefined
-        ? quiet ? ["ignore", "ignore", "ignore"] : "inherit"
-        : ["pipe", "inherit", "inherit"],
+      stdio: input === undefined ? "inherit" : ["pipe", "inherit", "inherit"],
       windowsHide: false,
     });
     child.once("error", reject);
@@ -48,36 +38,11 @@ function run(command, args, { input, quiet = false } = {}) {
   });
 }
 
-async function requireReachableSteamMachine() {
-  let address;
-  try {
-    ({ address } = await lookup(steamHost));
-  } catch {
-    throw new Error(`Cannot find ${steamHost}. Make sure the Steam Machine is awake and on the same network.`);
-  }
-
-  await new Promise((resolveConnection, reject) => {
-    const socket = createConnection({ host: address, port: 22 });
-    const fail = () => {
-      socket.destroy();
-      reject(new Error(`The Steam Machine did not answer on ${steamHost}. Power it on or wake it, confirm it is on the same network, and try again.`));
-    };
-    socket.setTimeout(5000, fail);
-    socket.once("error", fail);
-    socket.once("connect", () => {
-      socket.destroy();
-      resolveConnection();
-    });
-  });
+const probe = await probeSteamMachine(steamMachine);
+if (probe.status === "unreachable") {
+  throw new Error(probe.message);
 }
-
-await requireReachableSteamMachine();
-
-if (
-  (await run("ssh", ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5", remote, "true"], {
-    quiet: true,
-  })) === 0
-) {
+if (probe.status === "ready") {
   console.log("Steam Machine SSH is already ready.");
   process.exit(0);
 }
@@ -129,14 +94,10 @@ if (process.platform === "win32") {
   await run("setx", ["STEAM_MACHINE_USER", steamUser]);
 }
 
-const verifyStatus = await run(
-  "ssh",
-  ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5", remote, "true"],
-  { quiet: true },
-);
-if (verifyStatus !== 0) {
-  console.error("SSH key setup did not complete.");
-  process.exit(verifyStatus);
+const verification = await probeSteamMachine(steamMachine);
+if (verification.status !== "ready") {
+  console.error(`SSH key setup did not complete. ${verification.message}`);
+  process.exit(1);
 }
 
 console.log("Steam Machine SSH setup is complete. Future deploys do not need a password.");

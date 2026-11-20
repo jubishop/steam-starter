@@ -15,7 +15,7 @@
     "dev:electron": "wait-on http://127.0.0.1:5173 && electron . --dev",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "scripts:check": "node --check scripts/build-artwork.mjs && node --check scripts/deploy-steam-machine.mjs && node --check scripts/lib/artwork.mjs && node --check scripts/lib/deployment.mjs && node --check scripts/setup-steam-ssh.mjs && node --check scripts/validate-artwork.mjs && node --check scripts/validate-config.mjs",
+    "scripts:check": "node --check scripts/build-artwork.mjs && node --check scripts/deploy-steam-machine.mjs && node --check scripts/lib/artwork.mjs && node --check scripts/lib/deployment.mjs && node --check scripts/lib/steam-machine.mjs && node --check scripts/setup-steam-ssh.mjs && node --check scripts/steam-ssh-status.mjs && node --check scripts/validate-artwork.mjs && node --check scripts/validate-config.mjs",
     "config:check": "node scripts/validate-config.mjs",
     "art:build": "node scripts/build-artwork.mjs",
     "art:check": "node scripts/validate-artwork.mjs",
@@ -25,6 +25,7 @@
     "dist:linux": "npm run build && electron-builder --config electron-builder.config.cjs --linux AppImage --x64 --publish never",
     "deploy:steam": "node scripts/deploy-steam-machine.mjs",
     "setup:steam": "node scripts/setup-steam-ssh.mjs",
+    "status:steam": "node scripts/steam-ssh-status.mjs",
     "shipit": "npm run check && npm run deploy:steam"
   },
   "dependencies": {

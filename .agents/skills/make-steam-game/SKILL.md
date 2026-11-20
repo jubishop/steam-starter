@@ -39,11 +39,11 @@ Read [references/artwork.md](references/artwork.md) before creating or changing 
 
 ## Set up the Steam Machine
 
-Before discussing setup, probe noninteractive SSH key authentication to `deck@steamdeck.local` with a short timeout; `npm run shipit` probes the same way and reports which case applies.
+Before discussing setup, run `npm run status:steam`. It prints which SSH case applies and exits 0 only for `ready`. `npm run shipit` runs the same check, and only it reports **Shortcut missing**.
 
-- **Key accepted:** SSH setup is complete, so don't mention passwords or computer trust.
-- **No answer:** ask the creator to power on or wake the Steam Machine, then retry. Propose the one-time `sshd` activation in [references/setup.md](references/setup.md) only after they confirm it is definitely on and on the same network but port 22 still doesn't answer.
-- **Port 22 answers but rejects the key:** perform only setup.md's computer-trust step.
+- **Key accepted (`ready`):** SSH setup is complete, so don't mention passwords or computer trust.
+- **No answer (`unreachable`):** ask the creator to power on or wake the Steam Machine, then retry. Propose the one-time `sshd` activation in [references/setup.md](references/setup.md) only after they confirm it is definitely on and on the same network but port 22 still doesn't answer.
+- **Port 22 answers but rejects the key (`untrusted`):** perform only setup.md's computer-trust step.
 - **Shortcut missing:** guide the creator through setup.md's one-time Non-Steam Game step.
 
 ## Deploy without sending the creator to a terminal

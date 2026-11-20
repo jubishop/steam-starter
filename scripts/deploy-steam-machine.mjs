@@ -1,12 +1,11 @@
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { lookup } from "node:dns/promises";
 import { access, chmod, copyFile, cp, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
-import { createConnection } from "node:net";
 import { dirname, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { isMatchingElectronDistribution, npmInvocation } from "./lib/deployment.mjs";
+import { probeSteamMachine, steamMachineTarget } from "./lib/steam-machine.mjs";
 
 process.on("uncaughtException", reportFailure);
 process.on("unhandledRejection", reportFailure);
@@ -30,16 +29,9 @@ const electronDistDirectory = resolve(releaseDirectory, "electron-linux-x64");
 const game = JSON.parse(await readFile(resolve(projectRoot, "game.config.json"), "utf8"));
 const packageMetadata = JSON.parse(await readFile(resolve(projectRoot, "package.json"), "utf8"));
 const electronVersion = packageMetadata.devDependencies?.electron;
-const steamHost = process.env.STEAM_MACHINE_HOST || "steamdeck.local";
-const steamUser = process.env.STEAM_MACHINE_USER || "deck";
-const remote = `${steamUser}@${steamHost}`;
+const steamMachine = steamMachineTarget();
+const { user: steamUser, remote } = steamMachine;
 
-if (!/^[A-Za-z0-9._-]+$/u.test(steamHost)) {
-  throw new Error("STEAM_MACHINE_HOST contains unsupported characters.");
-}
-if (!/^[A-Za-z0-9._-]+$/u.test(steamUser)) {
-  throw new Error("STEAM_MACHINE_USER contains unsupported characters.");
-}
 if (!/^[a-z0-9][a-z0-9-]*$/u.test(game.slug)) {
   throw new Error("game.config.json slug must contain lowercase letters, digits, and hyphens.");
 }
@@ -89,13 +81,13 @@ function desktopStringEscape(value) {
     .replaceAll("\t", "\\t");
 }
 
-function run(command, args, { cwd = projectRoot, input, capture = false, quiet = false } = {}) {
+function run(command, args, { cwd = projectRoot, input, capture = false } = {}) {
   return new Promise((resolveRun, reject) => {
     let stdout = "";
     const child = spawn(command, args, {
       cwd,
       stdio: input === undefined
-        ? capture ? ["ignore", "pipe", "inherit"] : quiet ? ["ignore", "ignore", "ignore"] : "inherit"
+        ? capture ? ["ignore", "pipe", "inherit"] : "inherit"
         : ["pipe", capture ? "pipe" : "inherit", "inherit"],
       windowsHide: false,
     });
@@ -138,29 +130,6 @@ async function verifySame(localPath, remotePath, label) {
   console.log(`Verified ${label}.`);
 }
 
-async function requireReachableSteamMachine() {
-  let address;
-  try {
-    ({ address } = await lookup(steamHost));
-  } catch {
-    throw new Error(`Cannot find ${steamHost}. Power on or wake the Steam Machine, confirm it is on the same network, and try again.`);
-  }
-
-  await new Promise((resolveConnection, reject) => {
-    const socket = createConnection({ host: address, port: 22 });
-    const fail = () => {
-      socket.destroy();
-      reject(new Error(`The Steam Machine did not answer on ${steamHost}. Power it on or wake it, confirm it is on the same network, and try again.`));
-    };
-    socket.setTimeout(5000, fail);
-    socket.once("error", fail);
-    socket.once("connect", () => {
-      socket.destroy();
-      resolveConnection();
-    });
-  });
-}
-
 async function packageLinux() {
   await rm(buildDirectory, { recursive: true, force: true });
   await rm(buildTempDirectory, { recursive: true, force: true });
@@ -194,15 +163,12 @@ async function packageLinux() {
   await mustRun(npm.command, [...npm.args, "run", "package:linux"]);
 }
 
-await requireReachableSteamMachine();
-
-const sshReady = await run(
-  "ssh",
-  ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5", remote, "true"],
-  { quiet: true },
-);
-if (sshReady.code !== 0) {
-  throw new Error("The Steam Machine is reachable but does not trust this computer yet. Run npm run setup:steam once, then deploy again.");
+const probe = await probeSteamMachine(steamMachine);
+if (probe.status === "unreachable") {
+  throw new Error(probe.message);
+}
+if (probe.status === "untrusted") {
+  throw new Error(`${probe.message} Run npm run setup:steam once, then deploy again.`);
 }
 
 console.log("Building the Linux x64 game...");
