@@ -4,6 +4,8 @@ import { fileURLToPath } from "node:url";
 
 import sharp from "sharp";
 
+import { logoProblem } from "./lib/artwork.mjs";
+
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const specs = [
   ["icon.png", 1024, 1024],
@@ -20,9 +22,15 @@ for (const [filename, width, height] of specs) {
   if (metadata.width !== width || metadata.height !== height) {
     throw new Error(`${filename} must be ${width}x${height}, not ${metadata.width}x${metadata.height}.`);
   }
-  if (filename === "steam-logo.png" && !metadata.hasAlpha) {
-    throw new Error("steam-logo.png must have a transparent alpha channel.");
+  if (filename === "steam-logo.png") {
+    if (!metadata.hasAlpha) {
+      throw new Error("steam-logo.png must have a transparent alpha channel.");
+    }
+    const problem = await logoProblem(path);
+    if (problem) {
+      throw new Error(problem);
+    }
   }
 }
 
-console.log("Steam artwork dimensions and logo transparency are valid.");
+console.log("Steam artwork dimensions and logo transparency and margins are valid.");

@@ -2,7 +2,7 @@
 
 Replace the starter artwork with one cohesive, original master illustration from the creator's game idea. The included images are placeholders and must not influence the new game's palette, composition, characters, or logo. Use image generation when available. Do not imitate protected characters, logos, or a named game's distinctive art.
 
-Keep the important subject inside the center 60–65 percent so portrait and wide crops remain useful. Create the wordmark separately so text is exact and can have transparency.
+Keep the important subject inside the center 60–65 percent so portrait and wide crops remain useful.
 
 Required files:
 
@@ -18,9 +18,9 @@ Required files:
 Workflow:
 
 1. Generate and inspect `assets/master-art.png` without text.
-2. Run `npm run art:build` to create each crop and the title logo. The Node script works on macOS and Windows.
-3. Make the compact JPG readable at 32×32. Prefer a bold face, symbol, or central silhouette over a detailed full scene.
-4. Render the exact game title as the transparent logo with generous side padding. Check its nontransparent bounding box so no letters are clipped.
+2. Restyle the placeholder wordmark in `logoSvg` in `scripts/build-artwork.mjs` to suit the game.
+3. Run `npm run art:build` to create each crop and fit the exact title into the transparent logo.
+4. Make the compact JPG readable at 32×32. Prefer a bold face, symbol, or central silhouette over a detailed full scene.
 5. Run `npm run art:check`.
 6. Visually inspect every output, including a temporary 32×32 compact-icon preview.
 

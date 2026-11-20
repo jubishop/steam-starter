@@ -1,8 +1,10 @@
-import { mkdir, readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import sharp from "sharp";
+
+import { fitLogo } from "./lib/artwork.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const assets = resolve(projectRoot, "assets");
@@ -31,24 +33,28 @@ await Promise.all([
   cover("steam-hero.png", 3840, 1240),
 ]);
 
-const title = String(game.title).toUpperCase();
-const escapedTitle = title
-  .replaceAll("&", "&amp;")
-  .replaceAll("<", "&lt;")
-  .replaceAll(">", "&gt;")
-  .replaceAll('"', "&quot;")
-  .replaceAll("'", "&apos;");
-const fontSize = Math.max(70, Math.min(170, Math.floor(1800 / Math.max(title.length, 1))));
-const logo = `
-  <svg width="1280" height="360" xmlns="http://www.w3.org/2000/svg">
-    <text x="640" y="230" text-anchor="middle"
+// The starter's placeholder wordmark: restyle it for each game. The canvas only
+// needs room for every letter; fitLogo trims and fits it into the Steam logo.
+function logoSvg(gameTitle) {
+  const title = String(gameTitle)
+    .toUpperCase()
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
+  const fontSize = 170;
+  const width = Math.ceil(fontSize * (1.25 * String(gameTitle).length + 2));
+  const height = fontSize * 2;
+  const text = `x="${width / 2}" y="${fontSize * 1.4}" text-anchor="middle"
       font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="700" font-style="italic"
-      letter-spacing="-3" fill="#f5fbff" stroke="#062847" stroke-width="12"
-      paint-order="stroke fill">${escapedTitle}</text>
-    <text x="640" y="230" text-anchor="middle"
-      font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="700" font-style="italic"
-      letter-spacing="-3" fill="none" stroke="#29d9ff" stroke-width="2">${escapedTitle}</text>
+      letter-spacing="-3"`;
+  return `
+  <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+    <text ${text} fill="#f5fbff" stroke="#062847" stroke-width="12" paint-order="stroke fill">${title}</text>
+    <text ${text} fill="none" stroke="#29d9ff" stroke-width="2">${title}</text>
   </svg>`;
+}
 
-await sharp(Buffer.from(logo)).png().toFile(resolve(assets, "steam-logo.png"));
+await writeFile(resolve(assets, "steam-logo.png"), await fitLogo(Buffer.from(logoSvg(game.title))));
 console.log("Steam artwork was built from assets/master-art.png and game.config.json.");
