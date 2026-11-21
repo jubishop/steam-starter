@@ -1,3 +1,6 @@
+import { access } from "node:fs/promises";
+import { resolve } from "node:path";
+
 import sharp from "sharp";
 
 export const LOGO_WIDTH = 1280;
@@ -92,4 +95,19 @@ export async function logoProblem(image) {
     return `steam-logo.png reaches within ${LOGO_MIN_MARGIN}px of its ${describeSides(tight)}, so letters may be clipped.`;
   }
   return null;
+}
+
+// The image both icons are cropped from: a dedicated assets/icon-art.png when
+// the game has one, so reruns keep a readable compact icon, else the master art.
+export async function iconSource(assets) {
+  const iconArt = resolve(assets, "icon-art.png");
+  try {
+    await access(iconArt);
+    return iconArt;
+  } catch (error) {
+    if (error.code !== "ENOENT") {
+      throw error;
+    }
+    return resolve(assets, "master-art.png");
+  }
 }

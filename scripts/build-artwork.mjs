@@ -1,20 +1,23 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import sharp from "sharp";
 
-import { fitLogo } from "./lib/artwork.mjs";
+import { fitLogo, iconSource } from "./lib/artwork.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const assets = resolve(projectRoot, "assets");
 const master = resolve(assets, "master-art.png");
+const icon = await iconSource(assets);
+const iconPreview = resolve(projectRoot, "release", "steam-icon-32.png");
 const game = JSON.parse(await readFile(resolve(projectRoot, "game.config.json"), "utf8"));
 
 await mkdir(assets, { recursive: true });
+await mkdir(dirname(iconPreview), { recursive: true });
 
-async function cover(filename, width, height, format = "png") {
-  const image = sharp(master).resize(width, height, {
+async function cover(source, filename, width, height, format = "png") {
+  const image = sharp(source).resize(width, height, {
     fit: "cover",
     position: "centre",
   });
@@ -26,12 +29,14 @@ async function cover(filename, width, height, format = "png") {
 }
 
 await Promise.all([
-  cover("icon.png", 1024, 1024),
-  cover("steam-icon.jpg", 184, 184, "jpeg"),
-  cover("steam-grid-portrait.png", 600, 900),
-  cover("steam-grid-landscape.png", 920, 430),
-  cover("steam-hero.png", 3840, 1240),
+  cover(icon, "icon.png", 1024, 1024),
+  cover(icon, "steam-icon.jpg", 184, 184, "jpeg"),
+  cover(master, "steam-grid-portrait.png", 600, 900),
+  cover(master, "steam-grid-landscape.png", 920, 430),
+  cover(master, "steam-hero.png", 3840, 1240),
 ]);
+// A 32×32 preview for checking that the compact icon stays readable at list size.
+await sharp(resolve(assets, "steam-icon.jpg")).resize(32, 32).png().toFile(iconPreview);
 
 // The starter's placeholder wordmark: restyle it for each game. The canvas only
 // needs room for every letter; fitLogo trims and fits it into the Steam logo.
@@ -57,4 +62,6 @@ function logoSvg(gameTitle) {
 }
 
 await writeFile(resolve(assets, "steam-logo.png"), await fitLogo(Buffer.from(logoSvg(game.title))));
-console.log("Steam artwork was built from assets/master-art.png and game.config.json.");
+const iconNote = icon === master ? "" : `, with both icons from ${relative(projectRoot, icon)}`;
+console.log(`Steam artwork was built from assets/master-art.png and game.config.json${iconNote}.`);
+console.log(`Inspect the compact icon at 32×32 in ${relative(projectRoot, iconPreview)}.`);

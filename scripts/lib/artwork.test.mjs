@@ -1,7 +1,11 @@
-import sharp from "sharp";
-import { describe, expect, it } from "vitest";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-import { LOGO_HEIGHT, LOGO_WIDTH, fitLogo, logoProblem, opaqueBounds } from "./artwork.mjs";
+import sharp from "sharp";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+
+import { LOGO_HEIGHT, LOGO_WIDTH, fitLogo, iconSource, logoProblem, opaqueBounds } from "./artwork.mjs";
 
 function svg(width, height, shapes) {
   return Buffer.from(
@@ -77,5 +81,27 @@ describe("logoProblem", () => {
     const empty = await sharp(svg(LOGO_WIDTH, LOGO_HEIGHT, "")).png().toBuffer();
 
     expect(await logoProblem(empty)).toMatch(/nothing visible/u);
+  });
+});
+
+describe("iconSource", () => {
+  let assets;
+
+  beforeEach(async () => {
+    assets = await mkdtemp(join(tmpdir(), "steam-icon-source-"));
+  });
+
+  afterEach(async () => {
+    await rm(assets, { recursive: true, force: true });
+  });
+
+  it("uses dedicated icon art when present", async () => {
+    await writeFile(join(assets, "icon-art.png"), "");
+
+    expect(await iconSource(assets)).toBe(join(assets, "icon-art.png"));
+  });
+
+  it("falls back to the master art", async () => {
+    expect(await iconSource(assets)).toBe(join(assets, "master-art.png"));
   });
 });
