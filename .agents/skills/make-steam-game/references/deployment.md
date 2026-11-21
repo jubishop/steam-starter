@@ -14,7 +14,7 @@ The deployment:
 5. Installs and validates a Desktop launcher.
 6. Finds the matching Non-Steam shortcut by its exact executable path.
 7. Installs portrait, landscape, hero, logo, and compact-icon artwork under Steam's numeric shortcut ID.
-8. Stops an active `steam-launcher.service` before editing `shortcuts.vdf`, keeps a one-time backup, writes only the matching icon field, and restarts the service.
+8. Stops an active `steam-launcher.service` before editing `shortcuts.vdf`, keeps a one-time backup, writes only the icon field of each shortcut it found, selected by its shortcut ID, and restarts the service.
 
 Safeguards:
 

@@ -333,7 +333,7 @@ if (shortcuts.length === 0) {
         "ssh",
         [
           remote,
-          `python3 - --set-icon ${shellQuote(iconPath)} ${shellQuote(`${remoteDirectory}/${game.slug}`)} ${shellQuote(shortcutFile)}`,
+          `python3 - --set-icon ${shellQuote(appId)} ${shellQuote(iconPath)} ${shellQuote(`${remoteDirectory}/${game.slug}`)} ${shellQuote(shortcutFile)}`,
         ],
         { input: shortcutTool },
       );

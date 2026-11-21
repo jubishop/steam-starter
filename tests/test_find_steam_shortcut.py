@@ -25,20 +25,21 @@ def group(key, body):
     return b"\x00" + key.encode() + b"\0" + body + b"\x08"
 
 
-def shortcut(index, app_id, exe, icon="", *, has_icon=True):
-    """Build one shortcut from a subset of the fields Steam writes, in Steam's order."""
-    return group(str(index), b"".join((
-        number("appid", app_id),
-        text("AppName", f"Game {index}"),
-        text("Exe", exe),
-        text("StartDir", '"/home/deck/Games/demo/"'),
-        text("icon", icon) if has_icon else b"",
-        text("ShortcutPath", ""),
-        text("LaunchOptions", "--fullscreen"),
-        number("IsHidden", 0),
-        number("LastPlayTime", 1700000000),
-        group("tags", text("0", "favorite")),
-    )))
+def shortcut(index, app_id, exe, icon="", *, omit=()):
+    """Build one shortcut from a subset of the fields Steam writes, in Steam's order, less any omitted keys."""
+    fields = (
+        ("appid", number("appid", app_id)),
+        ("AppName", text("AppName", f"Game {index}")),
+        ("Exe", text("Exe", exe)),
+        ("StartDir", text("StartDir", '"/home/deck/Games/demo/"')),
+        ("icon", text("icon", icon)),
+        ("ShortcutPath", text("ShortcutPath", "")),
+        ("LaunchOptions", text("LaunchOptions", "--fullscreen")),
+        ("IsHidden", number("IsHidden", 0)),
+        ("LastPlayTime", number("LastPlayTime", 1700000000)),
+        ("tags", group("tags", text("0", "favorite"))),
+    )
+    return group(str(index), b"".join(field for key, field in fields if key not in omit))
 
 
 def library(*shortcuts):
@@ -66,8 +67,9 @@ class FindSteamShortcutTests(unittest.TestCase):
         return subprocess.run([sys.executable, "-", *arguments], input=TOOL, env=self.env,
                               text=True, capture_output=True, timeout=60)
 
-    def set_icon(self, icon, path, target=GAME):
-        return self.tool("--set-icon", icon, target, str(path))
+    def set_icon(self, app_id, icon, path, target=GAME):
+        # Deployment passes each shortcut's appid from the lookup with that shortcut's icon.
+        return self.tool("--set-icon", str(app_id), icon, target, str(path))
 
     def entries(self, path):
         return sorted(entry.name for entry in path.parent.iterdir())
@@ -101,13 +103,14 @@ class FindSteamShortcutTests(unittest.TestCase):
 
     def test_set_icon_changes_only_the_matching_icon(self):
         icon = "/new/grid/3000000002_icon.jpg"
-        for user, exe in (("111", GAME), ("222", f'"{GAME}"')):
+        # The lookup strips whitespace and then quotes from Exe, so the edit must match the same values.
+        for user, exe in (("111", GAME), ("222", f'"{GAME}"'), ("333", f' "{GAME}"\t')):
             with self.subTest(exe=exe):
                 before = shortcut(0, 3000000001, f"{GAME}-other", "/old/other.png")
                 after = shortcut(2, 3000000003, "/home/deck/Games/demo", "/old/after.png")
                 path = self.vdf(user, library(before, shortcut(1, 3000000002, exe, "/old.png"), after))
 
-                result = self.set_icon(icon, path)
+                result = self.set_icon(3000000002, icon, path)
 
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(path.read_bytes(), library(before, shortcut(1, 3000000002, exe, icon), after))
@@ -115,19 +118,57 @@ class FindSteamShortcutTests(unittest.TestCase):
                 self.assertEqual(result.stdout, f"3000000002\t{path.parent / 'grid'}\n")
                 self.assertEqual(self.entries(path), ["shortcuts.vdf", "shortcuts.vdf.steam-game.bak"])
 
-    def test_missing_icon_before_shortcut_path_fails_and_leaves_the_file(self):
+    def test_missing_icon_fails_and_leaves_the_file(self):
+        # Without its own icon, the shortcut must not borrow the next shortcut's, even with no ShortcutPath between.
+        for user, omit in (("111", ("icon",)), ("222", ("icon", "ShortcutPath"))):
+            with self.subTest(omit=omit):
+                path = self.vdf(user, library(
+                    shortcut(0, 3000000001, GAME, omit=omit),
+                    shortcut(1, 3000000002, "/home/deck/Games/other/other", "/old/other.png"),
+                ))
+                original = path.read_bytes()
+
+                result = self.set_icon(3000000001, "/new/icon.jpg", path)
+
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(f"icon field not found in shortcut 3000000001 for {GAME}", result.stderr)
+                self.assertEqual(path.read_bytes(), original)
+                self.assertEqual(self.entries(path), ["shortcuts.vdf"])
+
+    def test_set_icon_edits_only_the_shortcut_with_the_given_appid(self):
+        # A creator who adds the game twice gets two shortcuts with one Exe, and deployment sets each one's icon.
+        other = shortcut(2, 3000000003, "/home/deck/Games/other/other", "/old/other.png")
         path = self.vdf("111", library(
-            shortcut(0, 3000000001, GAME, has_icon=False),
-            shortcut(1, 3000000002, "/home/deck/Games/other/other", "/old/other.png"),
+            shortcut(0, 3000000001, GAME, "/old/first.png"),
+            shortcut(1, 3000000002, f'"{GAME}"', "/old/second.png"),
+            other,
         ))
+        icons = {app_id: f"/grid/{app_id}_icon.jpg" for app_id in (3000000001, 3000000002)}
+
+        for app_id, icon in icons.items():
+            result = self.set_icon(app_id, icon, path)
+            self.assertEqual(result.returncode, 0, result.stderr)
+        # Another game's appid with this game's Exe matches no shortcut.
+        result = self.set_icon(3000000003, "/grid/3000000003_icon.jpg", path)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+        self.assertEqual(path.read_bytes(), library(
+            shortcut(0, 3000000001, GAME, icons[3000000001]),
+            shortcut(1, 3000000002, f'"{GAME}"', icons[3000000002]),
+            other,
+        ))
+
+    def test_set_icon_rejects_a_missing_or_nonnumeric_appid(self):
+        path = self.vdf("111", library(shortcut(0, 3000000001, GAME, "/old.png")))
         original = path.read_bytes()
 
-        result = self.set_icon("/new/icon.jpg", path)
+        for arguments in (("--set-icon", "/new/icon.jpg", GAME), ("--set-icon", "/new/icon.jpg", GAME, str(path))):
+            with self.subTest(arguments=arguments):
+                result = self.tool(*arguments)
 
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn(f"icon field not found for {GAME}", result.stderr)
-        self.assertEqual(path.read_bytes(), original)
-        self.assertEqual(self.entries(path), ["shortcuts.vdf"])
+                self.assertEqual(result.returncode, 2)
+                self.assertIn("usage: find-steam-shortcut.py --set-icon APPID ICON EXECUTABLE", result.stderr)
+                self.assertEqual(path.read_bytes(), original)
 
     def test_first_edit_backs_up_the_original_and_later_edits_keep_it(self):
         original = library(shortcut(0, 3000000001, GAME, "/old.png"))
@@ -136,7 +177,7 @@ class FindSteamShortcutTests(unittest.TestCase):
 
         for icon in ("/first/icon.jpg", "/second/icon.jpg"):
             with self.subTest(icon=icon):
-                result = self.set_icon(icon, path)
+                result = self.set_icon(3000000001, icon, path)
 
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(path.read_bytes(), library(shortcut(0, 3000000001, GAME, icon)))
@@ -144,15 +185,16 @@ class FindSteamShortcutTests(unittest.TestCase):
 
     def test_no_write_without_a_needed_change(self):
         cases = {
-            "nothing matches": (f"{GAME}-other", "/new/icon.jpg", ""),
-            "icon already set": (GAME, "/same/icon.jpg", "3000000001\t{grid}\n"),
+            "nothing matches": (f"{GAME}-other", 3000000001, "/new/icon.jpg", ""),
+            "appid matches no shortcut": (GAME, 3000000009, "/new/icon.jpg", "3000000001\t{grid}\n"),
+            "icon already set": (GAME, 3000000001, "/same/icon.jpg", "3000000001\t{grid}\n"),
         }
-        for name, (exe, icon, stdout) in cases.items():
+        for name, (exe, app_id, icon, stdout) in cases.items():
             with self.subTest(name):
                 path = self.vdf(name, library(shortcut(0, 3000000001, exe, "/same/icon.jpg")))
                 original, modified = path.read_bytes(), path.stat().st_mtime_ns
 
-                result = self.set_icon(icon, path)
+                result = self.set_icon(app_id, icon, path)
 
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(result.stdout, stdout.format(grid=path.parent / "grid"))

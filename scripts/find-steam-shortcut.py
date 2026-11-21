@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import glob
 import os
+import re
 import shutil
 import struct
 import sys
@@ -17,8 +18,16 @@ def read_cstring(data: bytes, offset: int) -> tuple[str, int]:
     return data[offset:end].decode("utf-8"), end + 1
 
 
-def read_object(data: bytes, offset: int = 0) -> tuple[dict[str, Any], int]:
-    result: dict[str, Any] = {}
+class VdfObject(dict[str, Any]):
+    """A binary VDF object's values, with each text value's byte range in the file."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.text_ranges: dict[str, tuple[int, int]] = {}
+
+
+def read_object(data: bytes, offset: int = 0) -> tuple[VdfObject, int]:
+    result = VdfObject()
 
     while offset < len(data):
         value_type = data[offset]
@@ -30,7 +39,9 @@ def read_object(data: bytes, offset: int = 0) -> tuple[dict[str, Any], int]:
         if value_type == 0:
             value, offset = read_object(data, offset)
         elif value_type == 1:
+            start = offset
             value, offset = read_cstring(data, offset)
+            result.text_ranges[key] = (start, offset - 1)
         elif value_type == 2:
             value = struct.unpack_from("<I", data, offset)[0]
             offset += 4
@@ -52,60 +63,50 @@ def normalize_executable(value: str) -> str:
     return value.strip().strip('"')
 
 
+def matching_shortcuts(target: str, data: bytes) -> list[VdfObject]:
+    """Return the shortcuts in one shortcuts.vdf whose Exe names target and that have an appid."""
+    root, _ = read_object(data)
+    shortcuts = root.get("shortcuts", {})
+    return [
+        shortcut
+        for shortcut in shortcuts.values()
+        if isinstance(shortcut, VdfObject)
+        and normalize_executable(str(shortcut.get("Exe", ""))) == target
+        and isinstance(shortcut.get("appid"), int)
+    ]
+
+
 def find_shortcuts(target: str, files: list[str]) -> list[tuple[int, Path]]:
     matches: list[tuple[int, Path]] = []
     for filename in files:
         shortcut_file = Path(filename)
-        root, _ = read_object(shortcut_file.read_bytes())
-        shortcuts = root.get("shortcuts", {})
-        for shortcut in shortcuts.values():
-            if not isinstance(shortcut, dict):
-                continue
-            if normalize_executable(str(shortcut.get("Exe", ""))) != target:
-                continue
-            app_id = shortcut.get("appid")
-            if isinstance(app_id, int):
-                matches.append((app_id, shortcut_file.parent / "grid"))
+        for shortcut in matching_shortcuts(target, shortcut_file.read_bytes()):
+            matches.append((shortcut["appid"], shortcut_file.parent / "grid"))
     return matches
 
 
-def set_shortcut_icon(target: str, icon: str, files: list[str]) -> None:
-    exe_values = (target, f'"{target}"')
+def set_shortcut_icon(target: str, app_id: int, icon: str, files: list[str]) -> None:
+    """Set the icon of each shortcut the lookup finds with this appid, checking them all before writing any."""
+    updates: list[tuple[Path, bytes]] = []
     for filename in files:
         shortcut_file = Path(filename)
         data = shortcut_file.read_bytes()
-        updated = data
-
-        for exe_value in exe_values:
-            exe_field = b"\x01Exe\0" + exe_value.encode() + b"\0"
-            exe_offset = updated.find(exe_field)
-            if exe_offset < 0:
+        icon_ranges = []
+        for shortcut in matching_shortcuts(target, data):
+            if shortcut["appid"] != app_id:
                 continue
+            if not isinstance(shortcut.get("icon"), str):
+                raise ValueError(f"icon field not found in shortcut {app_id} for {target}")
+            icon_ranges.append(shortcut.text_ranges["icon"])
 
-            icon_field = b"\x01icon\0"
-            icon_key_offset = updated.find(
-                icon_field,
-                exe_offset + len(exe_field),
-            )
-            shortcut_path_offset = updated.find(
-                b"\x01ShortcutPath\0",
-                exe_offset + len(exe_field),
-            )
-            if (
-                icon_key_offset < 0
-                or shortcut_path_offset < 0
-                or icon_key_offset > shortcut_path_offset
-            ):
-                raise ValueError(f"icon field not found for {target}")
+        updated = data
+        # Replace from the end of the file so earlier ranges stay valid.
+        for start, end in sorted(icon_ranges, reverse=True):
+            updated = updated[:start] + icon.encode() + updated[end:]
+        if updated != data:
+            updates.append((shortcut_file, updated))
 
-            value_start = icon_key_offset + len(icon_field)
-            value_end = updated.index(b"\0", value_start)
-            updated = updated[:value_start] + icon.encode() + updated[value_end:]
-            break
-
-        if updated == data:
-            continue
-
+    for shortcut_file, updated in updates:
         backup = shortcut_file.with_suffix(shortcut_file.suffix + ".steam-game.bak")
         if not backup.exists():
             shutil.copy2(shortcut_file, backup)
@@ -119,20 +120,20 @@ def set_shortcut_icon(target: str, icon: str, files: list[str]) -> None:
 
 def main() -> int:
     arguments = sys.argv[1:]
-    icon: str | None = None
+    icon_edit: tuple[int, str] | None = None
     if arguments[:1] == ["--set-icon"]:
-        if len(arguments) < 3:
+        if len(arguments) < 4 or not re.fullmatch(r"[0-9]+", arguments[1]):
             print(
-                "usage: find-steam-shortcut.py --set-icon ICON EXECUTABLE [SHORTCUTS_VDF ...]",
+                "usage: find-steam-shortcut.py --set-icon APPID ICON EXECUTABLE [SHORTCUTS_VDF ...]",
                 file=sys.stderr,
             )
             return 2
-        icon = arguments[1]
-        arguments = arguments[2:]
+        icon_edit = (int(arguments[1]), arguments[2])
+        arguments = arguments[3:]
 
     if not arguments:
         print(
-            "usage: find-steam-shortcut.py [--set-icon ICON] EXECUTABLE [SHORTCUTS_VDF ...]",
+            "usage: find-steam-shortcut.py [--set-icon APPID ICON] EXECUTABLE [SHORTCUTS_VDF ...]",
             file=sys.stderr,
         )
         return 2
@@ -141,8 +142,8 @@ def main() -> int:
     files = arguments[1:] or glob.glob(
         str(Path.home() / ".local/share/Steam/userdata/*/config/shortcuts.vdf")
     )
-    if icon is not None:
-        set_shortcut_icon(target, icon, files)
+    if icon_edit is not None:
+        set_shortcut_icon(target, *icon_edit, files)
     for app_id, grid_dir in find_shortcuts(target, files):
         print(f"{app_id}\t{grid_dir}")
     return 0
