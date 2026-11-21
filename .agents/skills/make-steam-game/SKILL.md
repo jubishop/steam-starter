@@ -12,7 +12,7 @@ Guide the creator with short, plain explanations. Make routine technical decisio
 
 1. Check the current folder, `game.config.json`, `.starter-template`, and `.agents/game-brief.md` when present.
 2. Make sure `node` 24 or newer, `npm`, `ssh`, `scp`, and `tar` run. macOS and current Windows include the SSH and archive tools; on Windows 11 they come from the **OpenSSH Client** optional feature. If one is missing, explain its purpose in one sentence and ask a parent before installing it: prefer `winget` on Windows, and the creator's existing package manager or the official installer on macOS. Verify each installed command before continuing.
-3. If this is the source `jubishop/steam-starter` repository, do not turn it into the creator's game. Ask where to create the game's new folder and copy the starter contents there without its `.git` directory.
+3. If this is the source `jubishop/steam-starter` repository, do not turn it into the creator's game. Ask where to create the game's new folder and export only this checkout's committed files there, as `git archive` does, leaving its ignored dependencies, builds, and worktrees behind.
 4. If this is a downloaded starter, confirm its folder is the local project's primary folder before personalizing it. If not, give the creator one short instruction to add or open that exact folder and start a new chat there.
 5. Take the title and one-sentence idea from `.agents/game-brief.md` when it exists; otherwise ask for whichever is missing, since a folder name or title alone is not a game idea. Derive the slug yourself.
 6. Don't raise Git or GitHub. Keep the game local, use Git only when it is already configured or a parent asks for version control or online backup, and never make a child's game public by default.
@@ -39,7 +39,7 @@ Read [references/artwork.md](references/artwork.md) before creating or changing 
 
 ## Set up the Steam Machine
 
-Before discussing setup, run `npm run status:steam`. It prints which SSH case applies and exits 0 only for `ready`. `npm run shipit` runs the same check, and only it reports **Shortcut missing**.
+Before discussing setup, run `npm run status:steam`. It prints which SSH case applies. `npm run shipit` runs the same check, and only it reports **Shortcut missing**.
 
 - **Key accepted (`ready`):** SSH setup is complete, so don't mention passwords or computer trust.
 - **No answer (`unreachable`):** ask the creator to power on or wake the Steam Machine, then retry. Propose the one-time `sshd` activation in [references/setup.md](references/setup.md) only after they confirm it is definitely on and on the same network but port 22 still doesn't answer.
@@ -48,6 +48,6 @@ Before discussing setup, run `npm run status:steam`. It prints which SSH case ap
 
 ## Deploy without sending the creator to a terminal
 
-Run `npm run shipit` yourself. It runs `npm run check`, refuses the starter example, probes SSH, deploys, and verifies the deployed files and Steam restart. Fix check failures from the current work, handle setup states as the section above says, and rerun it until it succeeds with the Steam shortcut found. Then tell the creator the game is ready and what to select in Gaming Mode.
+Run `npm run shipit` yourself. It runs `npm run check`, refuses the starter example, probes SSH, deploys, and verifies the result. Fix check failures from the current work, handle setup states as the section above says, and rerun it until it succeeds with the Steam shortcut found. Then tell the creator the game is ready and what to select in Gaming Mode.
 
 Read [references/deployment.md](references/deployment.md) when changing deployment scripts, diagnosing Steam launch behavior, or adding another Steam Machine.

@@ -1,6 +1,6 @@
 # Deployment design
 
-`npm run shipit` validates the game and runs the Node deployment script. The same command works from Codex on macOS and Windows. It invokes the current npm CLI through Node, avoiding Windows `.cmd` process-launch failures, and uses the operating system's standard `ssh`, `scp`, and `tar` commands; it does not need Fish or `rsync`.
+`npm run shipit` runs `npm run check`, then the Node deployment script, which invokes the current npm CLI through Node to avoid Windows `.cmd` process-launch failures.
 
 For another Steam Machine, `STEAM_MACHINE_HOST` and `STEAM_MACHINE_USER` override the `deck@steamdeck.local` default in `npm run status:steam`, `npm run setup:steam`, and the deployment, and `STEAM_MACHINE_TARGET` overrides the deployment's `/home/<user>/Games/<game-slug>` folder.
 
@@ -10,11 +10,11 @@ The deployment:
 2. Builds a Linux x64 Electron directory package.
    On Windows, if security software briefly locks electron-builder's extracted staging folder, the deployer validates and caches that exact Electron version, then retries from the unpacked distribution.
 3. Installs a wrapper that removes Steam's `LD_PRELOAD` only for Electron, avoiding Chromium zygote crashes while keeping the Electron sandbox enabled.
-4. Uploads one archive, expands it into a staging directory, and replaces only `/home/deck/Games/<game-slug>`. It restores the previous directory if activation fails.
+4. Uploads one archive, expands it into a staging directory, and replaces only the target folder. It restores the previous directory if activation fails.
 5. Installs and validates a Desktop launcher.
 6. Finds the matching Non-Steam shortcut by its exact executable path.
 7. Installs portrait, landscape, hero, logo, and compact-icon artwork under Steam's numeric shortcut ID.
-8. Stops Steam before editing `shortcuts.vdf`, creates a backup, writes only the matching icon field, and restarts Steam.
+8. Stops an active `steam-launcher.service` before editing `shortcuts.vdf`, keeps a one-time backup, writes only the matching icon field, and restarts the service.
 
 Safeguards:
 
