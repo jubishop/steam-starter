@@ -49,8 +49,10 @@ class FindSteamShortcutTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory(prefix="steam-starter shortcuts ")
         self.addCleanup(temporary.cleanup)
-        self.userdata = Path(temporary.name).resolve() / "userdata"
+        home = Path(temporary.name).resolve() / "home"
+        self.userdata = home / ".local/share/Steam/userdata"
         self.env = {key: value for key, value in os.environ.items() if not key.startswith("PYTHON")}
+        self.env["HOME"] = str(home)
 
     def vdf(self, user, data):
         path = self.userdata / user / "config/shortcuts.vdf"
@@ -85,6 +87,17 @@ class FindSteamShortcutTests(unittest.TestCase):
         self.assertEqual(result.stdout, f"3000000001\t{first.parent / 'grid'}\n"
                                         f"4000000004\t{second.parent / 'grid'}\n")
         self.assertEqual({path: path.read_bytes() for path in originals}, originals)
+
+    def test_lookup_without_files_searches_every_steam_user(self):
+        # Deployment's lookup passes no files, so the script finds each user's shortcuts.vdf under HOME.
+        first = self.vdf("111", library(shortcut(0, 3000000001, GAME)))
+        second = self.vdf("222", library(shortcut(0, 4000000004, f'"{GAME}"')))
+
+        result = self.tool(GAME)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(sorted(result.stdout.splitlines()), [f"3000000001\t{first.parent / 'grid'}",
+                                                              f"4000000004\t{second.parent / 'grid'}"])
 
     def test_set_icon_changes_only_the_matching_icon(self):
         icon = "/new/grid/3000000002_icon.jpg"
