@@ -16,7 +16,7 @@ Guide the creator with short, plain explanations. Make routine technical decisio
 4. If this is a downloaded starter, confirm its folder is the local project's primary folder before personalizing it. If not, give the creator one short instruction to add or open that exact folder and start a new chat there.
 5. Take the title and one-sentence idea from `.agents/game-brief.md` when it exists; otherwise ask for whichever is missing, since a folder name or title alone is not a game idea. Derive the slug yourself.
 6. Don't raise Git or GitHub. Keep the game local, use Git only when it is already configured or a parent asks for version control or online backup, and never make a child's game public by default.
-7. Update `game.config.json`, keeping `appId` stable once the game has been added to Steam. Remove `.starter-template` and the game brief only after the personalization checks in the creative-slate reference pass.
+7. Update `game.config.json`, keeping `slug` and `appId` stable once the game is in Steam, since its shortcut runs the slug's executable. Remove `.starter-template` and the game brief only after the personalization checks in the creative-slate reference pass.
 
 ## Create from a clean creative slate
 
